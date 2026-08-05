@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Shell 控制台 - {{.Hostname}}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            background: #000000;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background: #ffffff;
+            padding: 14px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-bottom: 1px solid #e5e7eb;
+            flex-shrink: 0;
+        }
+        .header-left h1 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0 0 3px 0;
+            color: #1f2937;
+        }
+        .header-left p {
+            font-size: 13px;
+            color: #6b7280;
+            margin: 0;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .toolbar-btn {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 7px 12px;
+            font-size: 13px;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        .toolbar-btn:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .toolbar-btn:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f9fafb;
+            padding: 7px 12px;
+            border-radius: 20px;
+            border: 1px solid #e5e7eb;
+        }
+        .connect-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 7px 18px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .connect-btn:hover {
+            background: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+        }
+        .connect-btn.disconnect {
+            background: #ef4444;
+        }
+        .connect-btn.disconnect:hover {
+            background: #dc2626;
+            box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+        }
+        .connect-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #d1d5db;
+        }
+        .status-dot.connected {
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+        .status-dot.connecting {
+            background: #f59e0b;
+            animation: blink 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .status-text {
+            font-size: 13px;
+            font-weight: 500;
+            color: #374151;
+        }
+        #terminal-container {
+            flex: 1;
+            overflow: hidden;
+            background: #000000;
+            position: relative;
+            padding-bottom: 20px;
+        }
+        #terminal {
+            width: 100%;
+            height: 100%;
+            padding: 15px;
+        }
+        .xterm-viewport {
+            overflow-y: auto !important;
+        }
+        .xterm-screen {
+            padding-bottom: 30px !important;
+        }
+        .disconnect-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(8px);
+        }
+        .disconnect-overlay.show {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .disconnect-message {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 40px 50px;
+            text-align: center;
+            max-width: 480px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .disconnect-message .icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+        .disconnect-message h2 {
+            color: #1f2937;
+            margin-bottom: 16px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .disconnect-message p {
+            color: #6b7280;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <h1>Shell 控制台</h1>
+            <p>容器: {{.Hostname}}</p>
+                        </div>
+        <div class="header-right">
+            <div class="toolbar">
+                <button class="toolbar-btn" id="font-decrease" title="减小字体">字体 -</button>
+                <button class="toolbar-btn" id="font-increase" title="增大字体">字体 +</button>
+                <button class="toolbar-btn" id="clear-terminal" title="清屏">清屏</button>
+                <button class="toolbar-btn" id="fullscreen" title="全屏">全屏</button>
+                        </div>
+            <div class="status">
+                <div class="status-dot" id="status-dot"></div>
+                <span class="status-text" id="status-text">未连接</span>
+            </div>
+            <button class="connect-btn" id="connect-btn">连接</button>
+        </div>
+    </div>
+    <div id="terminal-container">
+        <div id="terminal"></div>
+    </div>
+    
+    <div class="disconnect-overlay" id="disconnect-overlay">
+        <div class="disconnect-message">
+            <div class="icon">⚠️</div>
+            <h2>连接已断开</h2>
+            <p>会话已结束，请点击右上角的"连接"按钮重新建立连接。</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
+    <script>
+        // 初始化 XTerm.js - 使用默认配置，不覆盖任何颜色
+        const term = new Terminal({
+            cursorBlink: true,
+            cursorStyle: 'block',
+            fontSize: 14,
+            fontFamily: 'Consolas, Monaco, "Courier New", monospace',
+            scrollback: 999999,  // 设置为极大值实现近似无限回滚
+            convertEol: false,
+            allowProposedApi: true,
+            drawBoldTextInBrightColors: true,
+            // 不设置 theme，使用 XTerm.js 默认主题
+        });
+        const fitAddon = new FitAddon.FitAddon();
+        term.loadAddon(fitAddon);
+        term.open(document.getElementById('terminal'));
+        fitAddon.fit();
+        
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+        const connectBtn = document.getElementById('connect-btn');
+        const disconnectOverlay = document.getElementById('disconnect-overlay');
+        
+        let ws = null;
+        let currentFontSize = 14;
+        
+        // 连接函数
+        function connect() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                return;
+            }
+            
+            statusDot.className = 'status-dot connecting';
+            statusText.textContent = '连接中...';
+            connectBtn.textContent = '连接中...';
+            connectBtn.disabled = true;
+            disconnectOverlay.classList.remove('show');
+            
+            ws = new WebSocket('{{.WSUrl}}');
+            
+            ws.onopen = () => {
+                console.log('WebSocket 连接成功');
+                statusDot.className = 'status-dot connected';
+                statusText.textContent = '已连接';
+                connectBtn.textContent = '断开';
+                connectBtn.className = 'connect-btn disconnect';
+                connectBtn.disabled = false;
+            };
+            
+            ws.onmessage = (event) => {
+                term.write(event.data);
+            };
+            
+            ws.onclose = () => {
+                console.log('WebSocket 连接关闭');
+                statusDot.className = 'status-dot';
+                statusText.textContent = '已断开';
+                connectBtn.textContent = '连接';
+                connectBtn.className = 'connect-btn';
+                connectBtn.disabled = false;
+                disconnectOverlay.classList.add('show');
+            };
+            
+            ws.onerror = (error) => {
+                console.error('WebSocket 错误:', error);
+            };
+        }
+        
+        // 断开函数
+        function disconnect() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.close();
+            }
+        }
+        
+        // 连接按钮事件
+        connectBtn.addEventListener('click', () => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                disconnect();
+            } else {
+                connect();
+            }
+        });
+        
+        // 监听终端输入
+        term.onData((data) => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'input',
+                    data: data
+                }));
+            }
+        });
+        
+        // 工具栏功能
+        document.getElementById('font-decrease').addEventListener('click', () => {
+            if (currentFontSize > 10) {
+                currentFontSize--;
+                term.options.fontSize = currentFontSize;
+                fitAddon.fit();
+            }
+        });
+        
+        document.getElementById('font-increase').addEventListener('click', () => {
+            if (currentFontSize < 24) {
+                currentFontSize++;
+                term.options.fontSize = currentFontSize;
+                fitAddon.fit();
+            }
+        });
+        
+        document.getElementById('clear-terminal').addEventListener('click', () => {
+            term.clear();
+        });
+        
+        document.getElementById('fullscreen').addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        });
+        
+        // 窗口大小变化时调整终端
+        window.addEventListener('resize', () => {
+            fitAddon.fit();
+        });
+        
+        // 自动连接
+        connect();
+    </script>
+</body>
+</html>

@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body class="bg-gray-50">
+    {{template "header.html" .}}
+    
+    <div class="container mx-auto px-4 py-8">
+        <!-- 面包屑导航 -->
+        <div class="mb-6">
+            <div class="flex items-center text-sm text-gray-600">
+                <a href="/nodes" class="hover:text-blue-600">节点管理</a>
+                <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+                <a href="/nodes/{{ .node_id }}" id="breadcrumbNodeName" class="hover:text-blue-600">加载中...</a>
+                <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+                <span class="text-gray-900 font-medium">容器列表</span>
+            </div>
+        </div>
+
+        <!-- 页面标题 -->
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">容器列表</h1>
+                <p class="text-gray-600 mt-1" id="nodeNameDisplay">加载中...</p>
+            </div>
+            <div class="flex gap-2">
+                <!-- 视图切换 -->
+                <div class="join">
+                    <button id="btnCardView" onclick="switchView('card')" class="px-3 py-1.5 text-xs font-medium bg-white border border-gray-200 join-item hover:bg-gray-50">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                        </svg>
+                    </button>
+                    <button id="btnListView" onclick="switchView('list')" class="px-3 py-1.5 text-xs font-medium bg-white border border-gray-200 join-item hover:bg-gray-50">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+                <button id="btnSelectAll" onclick="toggleSelectAllBtn()" class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg transition flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span id="selectAllText">全选</span>
+                </button>
+                <button onclick="syncContainers()" class="px-3 py-1.5 text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg transition flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    同步
+                </button>
+                <button onclick="refreshContainers()" class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg transition flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    刷新
+                </button>
+            </div>
+        </div>
+
+        <!-- 筛选和排序工具栏 -->
+        <div class="bg-white rounded-lg border border-gray-200 p-4 mb-4 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-gray-600">每页显示:</span>
+                    <select id="pageSize" onchange="changePageSize()" class="select select-bordered select-xs">
+                        <option value="25">25 条</option>
+                        <option value="50">50 条</option>
+                        <option value="100">100 条</option>
+                        <option value="all">全部</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-gray-600">排序:</span>
+                    <select id="sortField" onchange="changeSorting()" class="select select-bordered select-xs">
+                        <option value="">默认排序</option>
+                        <option value="cpu">CPU使用率</option>
+                        <option value="memory">内存使用量</option>
+                        <option value="disk">磁盘使用量</option>
+                        <option value="traffic">流量使用量</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2" id="sortOrderContainer" style="display: none;">
+                    <button onclick="toggleSortOrder()" id="sortOrderBtn" class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded transition flex items-center gap-1">
+                        <svg id="sortOrderIcon" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4"></path>
+                        </svg>
+                        <span id="sortOrderText">升序</span>
+                    </button>
+                </div>
+            </div>
+            <div class="text-xs text-gray-600">
+                共 <span id="totalCount" class="font-bold text-gray-800">0</span> 个容器
+                <span id="pageInfo" class="ml-2"></span>
+            </div>
+        </div>
+
+        <!-- 批量操作工具栏 -->
+        <div id="batchOperationBar" class="bg-blue-50 rounded-lg border border-blue-200 p-3 mb-4" style="display: none;">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-medium text-blue-900">已选择 <span id="selectedCount">0</span> 个容器</span>
+                    <button onclick="clearSelection()" class="text-xs text-blue-600 hover:text-blue-800 underline">清除选择</button>
+                </div>
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="batchStart()" class="px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 rounded transition">启动</button>
+                    <button onclick="batchStop()" class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded transition">停止</button>
+                    <button onclick="batchRestart()" class="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded transition">重启</button>
+                    <button onclick="batchSuspend()" class="px-3 py-1.5 text-xs font-medium text-yellow-700 bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 rounded transition">暂停</button>
+                    <button onclick="batchUnsuspend()" class="px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 rounded transition">恢复</button>
+                    <button onclick="batchResetTraffic()" class="px-3 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded transition">重置流量</button>
+                    <button onclick="batchDelete()" class="px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded transition">删除</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 容器列表 -->
+        <div id="containersContent">
+            <p class="text-center py-8 text-gray-500">加载中...</p>
+        </div>
+
+        <!-- 分页控件 -->
+        <div id="paginationContainer" class="mt-4 flex justify-center" style="display: none;">
+            <div class="join">
+                <button id="prevPage" onclick="goToPage(currentPage - 1)" class="join-item btn btn-sm">«</button>
+                <button class="join-item btn btn-sm">第 <span id="currentPageNum">1</span> 页</button>
+                <button id="nextPage" onclick="goToPage(currentPage + 1)" class="join-item btn btn-sm">»</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 创建容器模态框 -->
+    <script>
+        const nodeId = parseInt({{ .node_id }});
+        let currentView = localStorage.getItem('containerView') || 'card'; // 默认卡片视图
+        let containersData = []; // 保存容器数据
+        let filteredData = []; // 排序和筛选后的数据
+        
+        // 分页相关变量
+        let pageSize = 25;
+        let currentPage = 1;
+        let totalPages = 1;
+        
+        // 排序相关变量
+        let sortField = '';
+        let sortOrder = 'asc'; // 'asc' 或 'desc'
+
+        $(document).ready(function() {
+            loadNodeInfo();
+            loadContainers();
+            updateViewButtons(); // 更新视图按钮状态
+        });
+
+        function loadNodeInfo() {
+            $.get(`/api/nodes/${nodeId}`, function(result) {
+                if (result.code === 200) {
+                    $('#breadcrumbNodeName').text(result.data.name);
+                    $('#nodeNameDisplay').text(result.data.name || '未知节点');
+                }
+            });
+        }
+
+        function loadContainers() {
+            $('#containersContent').html('<p class="text-center py-8"><span class="loading loading-spinner loading-md"></span></p>');
+            
+            // 直接传递 node_id 参数，后端从数据库查询并筛选
+            $.get(`/api/containers/cache?node_id=${nodeId}`, function(result) {
+                if (result.code === 200) {
+                    containersData = result.data || [];
+                    applyFiltersAndSort();
+                    renderContainers();
+                } else {
+                    $('#containersContent').html('<p class="text-center py-8 text-error">加载失败</p>');
+                }
+            });
+        }
+
+        function applyFiltersAndSort() {
+            // 复制数据
+            filteredData = [...containersData];
+            
+            // 应用排序
+            if (sortField) {
+                filteredData.sort((a, b) => {
+                    let valueA, valueB;
+                    
+                    switch(sortField) {
+                        case 'cpu':
+                            valueA = a.cpu_usage || 0;
+                            valueB = b.cpu_usage || 0;
+                            break;
+                        case 'memory':
+                            valueA = a.memory_usage || 0;
+                            valueB = b.memory_usage || 0;
+                            break;
+                        case 'disk':
+                            valueA = a.disk_usage || 0;
+                            valueB = b.disk_usage || 0;
+                            break;
+                        case 'traffic':
+                            valueA = a.traffic_total || 0;
+                            valueB = b.traffic_total || 0;
+                            break;
+                        default:
+                            return 0;
+                    }
+                    
+                    if (sortOrder === 'asc') {
+                        return valueA - valueB;
+                    } else {
+                        return valueB - valueA;
+                    }
+                });
+            }
+            
+            // 更新总数
+            $('#totalCount').text(filteredData.length);
+            
+            // 计算分页
+            if (pageSize === 'all') {
+                totalPages = 1;
+                currentPage = 1;
+                $('#paginationContainer').hide();
+                $('#pageInfo').text('');
+            } else {
+                const size = parseInt(pageSize);
+                totalPages = Math.ceil(filteredData.length / size);
+                if (currentPage > totalPages) currentPage = totalPages || 1;
+                $('#paginationContainer').show();
+                updatePaginationInfo();
+            }
+        }
+
+        function updatePaginationInfo() {
+            const size = parseInt(pageSize);
+            const start = (currentPage - 1) * size + 1;
+            const end = Math.min(currentPage * size, filteredData.length);
+            $('#pageInfo').text(`(显示 ${start}-${end})`);
+            $('#currentPageNum').text(currentPage);
+            
+            // 更新按钮状态
+            $('#prevPage').prop('disabled', currentPage === 1);
+            $('#nextPage').prop('disabled', currentPage === totalPages);
+        }
+
+        function renderContainers() {
+            if (filteredData.length === 0) {
+                $('#containersContent').html('<p class="text-center py-8 text-gray-500">暂无容器</p>');
+                return;
+            }
+
+            if (currentView === 'card') {
+                renderCardView();
+            } else {
+                renderListView();
+            }
+        }
+
+        function renderCardView() {
+            // 获取当前页的数据
+            let dataToRender = getPageData();
+            
+            let html = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">';
+            
+            dataToRender.forEach(c => {
+                const statusBadge = c.status === 'Running' ? 
+                    '<span class="px-2 py-0.5 text-xs font-medium text-green-700 bg-green-100 rounded-full flex items-center gap-1 w-fit"><span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>在线</span>' : 
+                    c.status === 'Stopped' ?
+                    '<span class="px-2 py-0.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-full">离线</span>' :
+                    '<span class="px-2 py-0.5 text-xs font-medium text-yellow-700 bg-yellow-100 rounded-full">其他</span>';
+                
+                // 计算资源显示
+                const memoryUsed = c.memory_usage || 0;
+                const memoryTotal = c.memory_total || 0;
+                const memoryDisplay = memoryTotal > 0 ? 
+                    `${formatBytes(memoryUsed)} / ${formatBytes(memoryTotal)}` : 
+                    formatBytes(memoryUsed);
+                
+                const diskUsed = c.disk_usage || 0;
+                const diskTotal = c.disk_total || 0;
+                const diskDisplay = diskTotal > 0 ? 
+                    `${formatBytes(diskUsed)} / ${formatBytes(diskTotal)}` : 
+                    formatBytes(diskUsed);
+                
+                const trafficUsed = c.traffic_total || 0;
+                const trafficLimit = c.traffic_limit || 0;
+                const trafficLimitBytes = trafficLimit > 0 ? (trafficLimit * 1024 * 1024 * 1024) : 0;
+                const trafficDisplay = trafficLimitBytes > 0 ? 
+                    `${formatBytes(trafficUsed)} / ${formatBytes(trafficLimitBytes)}` : 
+                    formatBytes(trafficUsed);
+                
+                html += `
+                    <div class="bg-white rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all duration-200">
+                        <div class="p-4">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex items-center gap-2 flex-1 min-w-0">
+                                    <label class="cursor-pointer">
+                                        <input type="checkbox" class="checkbox checkbox-xs container-checkbox" data-hostname="${c.hostname}" onchange="updateSelection()" />
+                                    </label>
+                                    <h3 class="font-semibold text-gray-800 text-base truncate">${c.hostname}</h3>
+                                </div>
+                                ${statusBadge}
+                            </div>
+                            <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-md p-3 mb-3 space-y-1.5 text-xs">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600">CPU</span>
+                                    <span class="font-medium text-gray-800">${(c.cpu_usage || 0).toFixed(1)}% / ${c.cpus || 1}核</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600">内存</span>
+                                    <span class="font-medium text-gray-800">${memoryDisplay}</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600">磁盘</span>
+                                    <span class="font-medium text-gray-800">${diskDisplay}</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600">流量</span>
+                                    <span class="font-medium text-gray-800">${trafficDisplay}</span>
+                                </div>
+                            </div>
+                            <a href="/nodes/${nodeId}/containers/${c.hostname}" class="px-2 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded transition text-center block">
+                                详情
+                            </a>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            $('#containersContent').html(html);
+        }
+
+        function renderListView() {
+            let html = `
+                <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="table table-xs">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="w-10">
+                                        <label>
+                                            <input type="checkbox" id="selectAll" onchange="toggleSelectAll()" class="checkbox checkbox-xs" />
+                                        </label>
+                                    </th>
+                                    <th class="text-xs text-gray-600">主机名</th>
+                                    <th class="text-xs text-gray-600">状态</th>
+                                    <th class="text-xs text-gray-600">CPU</th>
+                                    <th class="text-xs text-gray-600">内存</th>
+                                    <th class="text-xs text-gray-600">磁盘</th>
+                                    <th class="text-xs text-gray-600">流量</th>
+                                    <th class="text-xs text-gray-600">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+            
+            // 获取当前页的数据
+            let dataToRender = getPageData();
+            
+            dataToRender.forEach(c => {
+                const statusBadge = c.status === 'Running' ? 
+                    '<span class="px-2 py-0.5 text-xs font-medium text-green-700 bg-green-100 rounded-full flex items-center gap-1 w-fit"><span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>在线</span>' : 
+                    c.status === 'Stopped' ?
+                    '<span class="px-2 py-0.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-full">离线</span>' :
+                    '<span class="px-2 py-0.5 text-xs font-medium text-yellow-700 bg-yellow-100 rounded-full">其他</span>';
+                
+                // 计算资源显示
+                const memoryUsed = c.memory_usage || 0;
+                const memoryTotal = c.memory_total || 0;
+                const memoryDisplay = memoryTotal > 0 ? 
+                    `${formatBytes(memoryUsed)} / ${formatBytes(memoryTotal)}` : 
+                    formatBytes(memoryUsed);
+                
+                const diskUsed = c.disk_usage || 0;
+                const diskTotal = c.disk_total || 0;
+                const diskDisplay = diskTotal > 0 ? 
+                    `${formatBytes(diskUsed)} / ${formatBytes(diskTotal)}` : 
+                    formatBytes(diskUsed);
+                
+                const trafficUsed = c.traffic_total || 0;
+                const trafficLimit = c.traffic_limit || 0;
+                const trafficLimitBytes = trafficLimit > 0 ? (trafficLimit * 1024 * 1024 * 1024) : 0;
+                const trafficDisplay = trafficLimitBytes > 0 ? 
+                    `${formatBytes(trafficUsed)} / ${formatBytes(trafficLimitBytes)}` : 
+                    formatBytes(trafficUsed);
+                
+                html += `
+                    <tr class="hover">
+                        <td>
+                            <label>
+                                <input type="checkbox" class="checkbox checkbox-xs container-checkbox" data-hostname="${c.hostname}" onchange="updateSelection()" />
+                            </label>
+                        </td>
+                        <td><span class="font-semibold text-gray-800 text-xs">${c.hostname}</span></td>
+                        <td>${statusBadge}</td>
+                        <td class="text-xs text-gray-700">${(c.cpu_usage || 0).toFixed(1)}% / ${c.cpus || 1}核</td>
+                        <td class="text-xs text-gray-700">${memoryDisplay}</td>
+                        <td class="text-xs text-gray-700">${diskDisplay}</td>
+                        <td class="text-xs text-gray-700">${trafficDisplay}</td>
+                        <td>
+                            <a href="/nodes/${nodeId}/containers/${c.hostname}" class="px-2 py-1 text-xs font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded transition">详情</a>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            $('#containersContent').html(html);
+        }
+
+        // 获取当前页的数据
+        function getPageData() {
+            if (pageSize === 'all') {
+                return filteredData;
+            }
+            
+            const size = parseInt(pageSize);
+            const start = (currentPage - 1) * size;
+            const end = start + size;
+            return filteredData.slice(start, end);
+        }
+
+        // 更改每页显示数量
+        function changePageSize() {
+            pageSize = $('#pageSize').val();
+            currentPage = 1; // 重置到第一页
+            applyFiltersAndSort();
+            renderContainers();
+        }
+
+        // 更改排序
+        function changeSorting() {
+            sortField = $('#sortField').val();
+            if (sortField) {
+                $('#sortOrderContainer').show();
+            } else {
+                $('#sortOrderContainer').hide();
+            }
+            currentPage = 1; // 重置到第一页
+            applyFiltersAndSort();
+            renderContainers();
+        }
+
+        // 切换排序顺序
+        function toggleSortOrder() {
+            sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+            
+            // 更新UI
+            if (sortOrder === 'asc') {
+                $('#sortOrderText').text('升序');
+                $('#sortOrderIcon').html('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4"></path>');
+            } else {
+                $('#sortOrderText').text('降序');
+                $('#sortOrderIcon').html('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m7 7V8m0 0l-4 4m4-4l4 4"></path>');
+            }
+            
+            applyFiltersAndSort();
+            renderContainers();
+        }
+
+        // 跳转到指定页
+        function goToPage(page) {
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            renderContainers();
+            updatePaginationInfo();
+        }
+
+        function switchView(view) {
+            currentView = view;
+            localStorage.setItem('containerView', view);
+            updateViewButtons();
+            renderContainers();
+        }
+
+        function updateViewButtons() {
+            if (currentView === 'card') {
+                $('#btnCardView').addClass('bg-blue-100 text-blue-700').removeClass('bg-white text-gray-700');
+                $('#btnListView').addClass('bg-white text-gray-700').removeClass('bg-blue-100 text-blue-700');
+            } else {
+                $('#btnCardView').addClass('bg-white text-gray-700').removeClass('bg-blue-100 text-blue-700');
+                $('#btnListView').addClass('bg-blue-100 text-blue-700').removeClass('bg-white text-gray-700');
+            }
+        }
+
+        // 同步容器：从LXD获取最新状态并更新到本地数据库（慢但准确）
+        function syncContainers() {
+            const $btn = $('button[onclick="syncContainers()"]');
+            $btn.prop('disabled', true).html('<span class="loading loading-spinner loading-sm"></span> 同步中...');
+            
+            $.post(`/api/sync/node/${nodeId}`, function(result) {
+                $btn.prop('disabled', false).html(`
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    同步
+                `);
+                
+                if (result.code === 200) {
+                    showToast('success', '同步任务已启动，正在获取最新状态...');
+                    // 等待5秒后刷新列表（同步需要更多时间）
+                    setTimeout(() => loadContainers(), 5000);
+                } else {
+                    showToast('error', result.msg || '同步失败');
+                }
+            }).fail(function(xhr) {
+                $btn.prop('disabled', false).html(`
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    同步
+                `);
+                showToast('error', xhr.responseJSON?.msg || '同步失败');
+            });
+        }
+
+        // 刷新容器：从lxdapi缓存快速复制（快速）
+        function refreshContainers() {
+            const $btn = $('button[onclick="refreshContainers()"]');
+            $btn.prop('disabled', true).html('<span class="loading loading-spinner loading-sm"></span> 刷新中...');
+            
+            $.post(`/api/nodes/${nodeId}/refresh`, function(result) {
+                $btn.prop('disabled', false).html(`
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    刷新
+                `);
+                
+                if (result.code === 200) {
+                    showToast('success', '刷新任务已启动...');
+                    // 等待2秒后重新加载列表
+                    setTimeout(() => loadContainers(), 2000);
+                } else {
+                    showToast('error', result.msg || '刷新失败');
+                }
+            }).fail(function(xhr) {
+                $btn.prop('disabled', false).html(`
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    刷新
+                `);
+                showToast('error', xhr.responseJSON?.msg || '刷新失败');
+            });
+        }
+
+        function formatBytes(bytes) {
+            if (!bytes) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function showToast(type, message) {
+            const colors = {
+                'success': 'bg-green-600',
+                'error': 'bg-red-600',
+                'warning': 'bg-orange-600',
+                'info': 'bg-blue-600'
+            };
+            
+            const toast = $(`
+                <div class="fixed top-4 right-4 ${colors[type] || colors.info} text-white px-6 py-3 rounded-lg shadow-lg z-50">
+                    ${message}
+                </div>
+            `);
+            
+            $('body').append(toast);
+            
+            setTimeout(() => {
+                toast.fadeOut(300, function() { $(this).remove(); });
+            }, 3000);
+        }
+
+        // 批量操作相关函数
+        function toggleSelectAll() {
+            const selectAll = $('#selectAll').is(':checked');
+            $('.container-checkbox').prop('checked', selectAll);
+            updateSelection();
+        }
+
+        function toggleSelectAllBtn() {
+            const totalCheckboxes = $('.container-checkbox').length;
+            const selectedCheckboxes = $('.container-checkbox:checked').length;
+            
+            if (selectedCheckboxes === totalCheckboxes && totalCheckboxes > 0) {
+                // 当前是全选状态，点击后取消全选
+                $('.container-checkbox').prop('checked', false);
+                $('#selectAll').prop('checked', false);
+            } else {
+                // 当前不是全选状态，点击后全选
+                $('.container-checkbox').prop('checked', true);
+                $('#selectAll').prop('checked', true);
+            }
+            updateSelection();
+        }
+
+        function updateSelection() {
+            const selectedCheckboxes = $('.container-checkbox:checked');
+            const count = selectedCheckboxes.length;
+            
+            $('#selectedCount').text(count);
+            
+            if (count > 0) {
+                $('#batchOperationBar').slideDown(200);
+            } else {
+                $('#batchOperationBar').slideUp(200);
+            }
+            
+            // 更新全选框状态（表格头部的复选框）
+            const totalCheckboxes = $('.container-checkbox').length;
+            $('#selectAll').prop('checked', count === totalCheckboxes && count > 0);
+            
+            // 更新全选按钮文本
+            if (count === totalCheckboxes && count > 0) {
+                $('#selectAllText').text('取消全选');
+            } else {
+                $('#selectAllText').text('全选');
+            }
+        }
+
+        function clearSelection() {
+            $('.container-checkbox').prop('checked', false);
+            $('#selectAll').prop('checked', false);
+            updateSelection();
+        }
+
+        function getSelectedContainers() {
+            const selected = [];
+            $('.container-checkbox:checked').each(function() {
+                selected.push($(this).data('hostname'));
+            });
+            return selected;
+        }
+
+        function batchStart() {
+            const containers = getSelectedContainers();
+            if (containers.length === 0) return;
+            
+            if (!confirm(`确定要启动选中的 ${containers.length} 个容器吗？`)) return;
+            
+            batchOperation(containers, 'start', '启动');
+        }
+
+        function batchStop() {
+            const containers = getSelectedContainers();
+            if (containers.length === 0) return;
+            
+            if (!confirm(`确定要停止选中的 ${containers.length} 个容器吗？`)) return;
+            
+            batchOperation(containers, 'stop', '停止');
+        }
+
+        function batchRestart() {
+            const containers = getSelectedContainers();
+            if (containers.length === 0) return;
+            
+            if (!confirm(`确定要重启选中的 ${containers.length} 个容器吗？`)) return;
+            
+            batchOperation(containers, 'restart', '重启');
+        }
+
+        function batchSuspend() {
+            const containers = getSelectedContainers();
+            if (containers.length === 0) return;
+            
+            if (!confirm(`确定要暂停选中的 ${containers.length} 个容器吗？`)) return;
+            
+            batchOperation(containers, 'suspend', '暂停');
+        }
+
+        function batchUnsuspend() {
+            const containers = getSelectedContainers();
+            if (containers.length === 0) return;
+            
+            if (!confirm(`确定要恢复选中的 ${containers.length} 个容器吗？`)) return;
+            
+            batchOperation(containers, 'unsuspend', '恢复');
+        }
+
+        function batchResetTraffic() {
+            const containers = getSelectedContainers();
+            if (containers.length === 0) return;
+            
+            if (!confirm(`确定要重置选中的 ${containers.length} 个容器的流量统计吗？`)) return;
+            
+            batchOperation(containers, 'traffic/reset', '重置流量');
+        }
+
+        function batchDelete() {
+            const containers = getSelectedContainers();
+            if (containers.length === 0) return;
+            
+            const confirmText = prompt(`⚠️ 此操作将永久删除选中的 ${containers.length} 个容器及其所有数据！\n\n请输入 "DELETE" 确认删除：`);
+            if (confirmText !== 'DELETE') {
+                if (confirmText !== null) showToast('error', '确认文本不匹配');
+                return;
+            }
+            
+            batchOperation(containers, 'delete', '删除', true);
+        }
+
+        function batchOperation(containers, action, actionName, isDelete = false) {
+            let successCount = 0;
+            let failCount = 0;
+            let total = containers.length;
+            
+            showToast('info', `开始批量${actionName}操作...`);
+            
+            // 使用Promise.all来并发执行所有请求
+            const promises = containers.map(hostname => {
+                return new Promise((resolve) => {
+                    $.ajax({
+                        url: `/api/containers/${hostname}/${action}?node_id=${nodeId}`,
+                        type: 'POST',
+                        success: function(result) {
+                            if (result.code === 200) {
+                                successCount++;
+                            } else {
+                                failCount++;
+                            }
+                            resolve();
+                        },
+                        error: function() {
+                            failCount++;
+                            resolve();
+                        }
+                    });
+                });
+            });
+            
+            Promise.all(promises).then(() => {
+                let message = `批量${actionName}完成：成功 ${successCount}，失败 ${failCount}`;
+                if (failCount > 0) {
+                    showToast('warning', message);
+                } else {
+                    showToast('success', message);
+                }
+                
+                // 清除选择
+                clearSelection();
+                
+                // 刷新列表
+                setTimeout(() => loadContainers(), 2000);
+            });
+        }
+    </script>
+
+    {{template "footer.html" .}}
+</body>
+</html>
+

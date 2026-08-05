@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body class="bg-gray-50">
+    {{template "header.html" .}}
+    
+    <div class="container mx-auto px-4 py-8">
+        <!-- 面包屑导航 -->
+        <div class="mb-6">
+            <div class="flex items-center text-sm text-gray-600">
+                <a href="/nodes" class="hover:text-blue-600">节点管理</a>
+                <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+                <span id="breadcrumbName" class="text-gray-900 font-medium">加载中...</span>
+            </div>
+        </div>
+
+        <!-- 节点信息卡片 -->
+        <div class="bg-white rounded-lg shadow-sm mb-6">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 id="nodeName" class="text-3xl font-bold text-gray-800">加载中...</h1>
+                            <p id="nodeDescription" class="text-gray-600 mt-1">-</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div id="nodeStatus">
+                            <span class="px-2 py-0.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-full">-</span>
+                        </div>
+                        <button onclick="testNodeConnection()" class="px-4 py-2 text-sm font-medium text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg transition flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                            </svg>
+                            测试连接
+                        </button>
+                        <button onclick="refreshNodeInfo()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-sm font-medium rounded-lg transition flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            刷新信息
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="systemInfoSection" class="grid grid-cols-2 md:grid-cols-4 gap-4 pb-6 border-b"></div>
+            </div>
+        </div>
+
+        <!-- 统计概览 -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <a href="/nodes/{{ .node_id }}/containers" class="bg-white rounded-lg p-6 border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 font-medium">容器管理</p>
+                        <p id="statsContainers" class="text-3xl font-bold text-gray-800 mt-2">-</p>
+                        <p class="text-xs text-blue-600 mt-1">点击查看详情 →</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 节点系统信息 -->
+        <div class="bg-white rounded-lg shadow-sm">
+            <div class="p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">系统详细信息</h3>
+                <div id="detailedSystemInfo" class="text-sm text-gray-600">
+                    <p class="text-center py-4">加载中...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const nodeId = parseInt({{ .node_id }});
+        let nodeData = null;
+
+        $(document).ready(function() {
+            loadNodeInfo();
+            loadNodeStats();
+        });
+
+        function loadNodeInfo() {
+            $.get(`/api/nodes/${nodeId}`, function(result) {
+                if (result.code === 200) {
+                    nodeData = result.data;
+                    renderNodeInfo(nodeData);
+                } else {
+                    showToast('error', '获取节点信息失败: ' + result.msg);
+                }
+            }).fail(function() {
+                showToast('error', '加载失败，请检查网络连接');
+            });
+        }
+
+        function renderNodeInfo(node) {
+            $('#breadcrumbName').text(node.name);
+            $('#nodeName').text(node.name);
+            $('#nodeDescription').text(node.description || '暂无描述');
+            
+            const statusBadges = {
+                'active': '<span class="px-2 py-0.5 text-xs font-medium text-green-700 bg-green-100 rounded-full flex items-center gap-1"><span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>在线</span>',
+                'inactive': '<span class="px-2 py-0.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-full">离线</span>',
+                'error': '<span class="px-2 py-0.5 text-xs font-medium text-red-700 bg-red-100 rounded-full">错误</span>'
+            };
+            $('#nodeStatus').html(statusBadges[node.status] || statusBadges.inactive);
+
+            const sysHtml = `
+                <div class="bg-white p-4 rounded-lg border">
+                    <p class="text-xs text-gray-500 mb-1">API地址</p>
+                    <p class="text-sm font-medium text-gray-800 break-all">${node.address}</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg border">
+                    <p class="text-xs text-gray-500 mb-1">创建时间</p>
+                    <p class="text-sm font-medium text-gray-800">${new Date(node.created_at).toLocaleString('zh-CN')}</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg border">
+                    <p class="text-xs text-gray-500 mb-1">最后检查</p>
+                    <p class="text-sm font-medium text-gray-800">${node.last_check ? new Date(node.last_check).toLocaleString('zh-CN') : '从未检查'}</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg border">
+                    <p class="text-xs text-gray-500 mb-1">自动同步</p>
+                    <p class="text-sm font-medium text-gray-800">${node.auto_sync ? '已启用' : '已禁用'}</p>
+                </div>
+            `;
+            $('#systemInfoSection').html(sysHtml);
+
+            const infoHtml = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><span class="font-medium">节点ID:</span> ${node.id}</div>
+                    <div><span class="font-medium">节点名称:</span> ${node.name}</div>
+                    <div><span class="font-medium">API地址:</span> <code class="bg-gray-200 px-2 py-1 rounded text-xs">${node.address}</code></div>
+                    <div><span class="font-medium">状态:</span> ${node.status}</div>
+                    <div><span class="font-medium">自动同步:</span> ${node.auto_sync ? '已启用' : '已禁用'}</div>
+                    <div><span class="font-medium">同步间隔:</span> ${node.sync_interval} 秒</div>
+                    <div><span class="font-medium">批次大小:</span> ${node.batch_size} 个</div>
+                    <div><span class="font-medium">批次间隔:</span> ${node.batch_interval} 秒</div>
+                    <div><span class="font-medium">创建时间:</span> ${new Date(node.created_at).toLocaleString('zh-CN')}</div>
+                </div>
+            `;
+            $('#detailedSystemInfo').html(infoHtml);
+        }
+
+        function loadNodeStats() {
+            $.get(`/api/containers/cache?node_id=${nodeId}`, function(result) {
+                if (result.code === 200) {
+                    const containers = result.data || [];
+                    $('#statsContainers').text(containers.length + ' 个');
+                }
+            });
+        }
+
+        function showToast(type, message) {
+            const colors = {
+                'success': 'bg-green-600',
+                'error': 'bg-red-600',
+                'info': 'bg-blue-600'
+            };
+            
+            const toast = $(`
+                <div class="fixed top-4 right-4 ${colors[type] || colors.info} text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in">
+                    ${message}
+                </div>
+            `);
+            
+            $('body').append(toast);
+            
+            setTimeout(() => {
+                toast.fadeOut(300, function() { $(this).remove(); });
+            }, 3000);
+        }
+
+        function testNodeConnection() {
+            const $btn = $('button:contains("测试连接")');
+            $btn.prop('disabled', true).html('<span class="loading loading-spinner loading-xs"></span> 测试中...');
+            
+            $.post(`/api/nodes/${nodeId}/test`, function(result) {
+                $btn.prop('disabled', false).html(`
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                    </svg>
+                    测试连接
+                `);
+                showToast(result.code === 200 ? 'success' : 'error', result.msg);
+                if (result.code === 200) {
+                    loadNodeInfo();
+                }
+            });
+        }
+
+        function refreshNodeInfo() {
+            const $btn = $('button:contains("刷新信息")');
+            $btn.prop('disabled', true);
+            
+            $.post(`/api/nodes/${nodeId}/refresh`, function(result) {
+                $btn.prop('disabled', false);
+                if (result.code === 200) {
+                    showToast('success', '刷新成功');
+                    setTimeout(() => {
+                        loadNodeInfo();
+                        loadNodeStats();
+                    }, 1000);
+                } else {
+                    showToast('error', result.msg);
+                }
+            });
+        }
+    </script>
+
+    {{template "footer.html" .}}
+</body>
+</html>

@@ -1,0 +1,560 @@
+<style>
+/* 简洁专业设计风格 */
+
+.resource-card {
+    border: 1px solid #e1e5e9;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s ease;
+}
+
+.resource-card:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.resource-header {
+    color: #495057;
+    font-weight: 600;
+    font-size: 0.8rem;
+    margin-bottom: 6px;
+}
+
+.resource-header i {
+    color: #6c757d;
+    margin-right: 4px;
+    font-size: 0.85rem;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+    .resource-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .resource-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .resource-grid-item {
+        padding: 12px;
+    }
+    
+    .resource-value {
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+    }
+    
+    .resource-header {
+        font-size: 0.75rem;
+    }
+    
+    .progress {
+        height: 4px;
+    }
+}
+
+.resource-value.text-primary {
+    color: #007bff !important;
+}
+
+.resource-value.text-success {
+    color: #28a745 !important;
+}
+
+.resource-value.text-info {
+    color: #17a2b8 !important;
+}
+
+.resource-value.text-warning {
+    color: #ffc107 !important;
+}
+
+.progress {
+    height: 5px;
+    border-radius: 3px;
+    background-color: #e9ecef;
+    border: 1px solid #dee2e6;
+}
+
+.progress-bar {
+    border-radius: 3px;
+    transition: width 0.3s ease;
+    height: 100%;
+}
+
+.progress-primary {
+    background-color: #007bff !important;
+}
+
+.progress-success {
+    background-color: #28a745 !important;
+}
+
+.progress-info {
+    background-color: #17a2b8 !important;
+}
+
+.progress-warning {
+    background-color: #ffc107 !important;
+}
+
+.progress-danger {
+    background-color: #dc3545 !important;
+}
+
+.resource-icon {
+    opacity: 0.15;
+    color: #6c757d;
+    font-size: 1.5rem !important;
+}
+
+.badge {
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.badge-info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+.badge-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.badge-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+/* 一排4个卡片 - 更紧凑的布局 */
+.resource-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    min-height: auto;
+}
+
+.resource-grid-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 12px;
+    height: 100%;
+}
+
+.resource-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    min-height: 1.4rem;
+    display: flex;
+    align-items: center;
+}
+
+/* Chart.js 图表样式 */
+canvas {
+    width: 100% !important;
+    height: 150px !important;
+}
+</style>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// 等待 Chart.js 加载
+window.chartJsLoaded = false;
+if (typeof Chart !== 'undefined') {
+    window.chartJsLoaded = true;
+} else {
+    // 轮询检查 Chart.js 是否加载
+    const checkChart = setInterval(() => {
+        if (typeof Chart !== 'undefined') {
+            window.chartJsLoaded = true;
+            clearInterval(checkChart);
+        }
+    }, 50);
+}
+</script>
+
+<div class="container-fluid">
+<div class="card shadow mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center py-3">
+        <div>
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-tachometer-alt mr-2"></i>容器状态监控
+            </h6>
+            <small class="text-muted">实时显示容器资源使用情况</small>
+            <span class="badge badge-info mt-1">
+                最后更新: <span id="last-update">刚刚</span>
+            </span>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="refreshInfoPage()">
+            <i class="fas fa-sync-alt mr-1"></i>刷新
+        </button>
+    </div>
+    <div class="card-body">
+        <div class="resource-grid">
+            <div class="card resource-card resource-grid-item">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <div class="resource-header">
+                            <i class="fas fa-microchip"></i>CPU使用率
+                        </div>
+                        <div class="resource-value text-primary" id="cpu-info">
+                            加载中...
+                        </div>
+                    </div>
+                    <i class="fas fa-microchip resource-icon"></i>
+                </div>
+                <canvas id="cpuChart"></canvas>
+            </div>
+            
+            <div class="card resource-card resource-grid-item">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <div class="resource-header">
+                            <i class="fas fa-memory"></i>内存使用
+                        </div>
+                        <div class="resource-value text-success" id="memory-info">
+                            加载中...
+                        </div>
+                    </div>
+                    <i class="fas fa-memory resource-icon"></i>
+                </div>
+                <canvas id="memoryChart"></canvas>
+            </div>
+            
+            <div class="card resource-card resource-grid-item">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <div class="resource-header">
+                            <i class="fas fa-hdd"></i>硬盘使用
+                        </div>
+                        <div class="resource-value text-info" id="disk-info">
+                            加载中...
+                        </div>
+                    </div>
+                    <i class="fas fa-hdd resource-icon"></i>
+                </div>
+                <canvas id="diskChart"></canvas>
+            </div>
+            
+            <div class="card resource-card resource-grid-item">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <div class="resource-header">
+                            <i class="fas fa-exchange-alt"></i>流量使用
+                        </div>
+                        <div class="resource-value text-warning" id="traffic-info">
+                            加载中...
+                        </div>
+                    </div>
+                    <i class="fas fa-exchange-alt resource-icon"></i>
+                </div>
+                <canvas id="trafficChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-question-circle mr-2"></i>使用说明
+        </h6>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="fas fa-key text-success mr-2"></i><strong>初始密码:</strong> 已在开通时设置，可直接登录</li>
+                    <li class="mb-2"><i class="fas fa-clock text-warning mr-2"></i><strong>响应时间:</strong> 部分操作响应较慢，请耐心等待</li>
+                    <li class="mb-2"><i class="fas fa-network-wired text-info mr-2"></i><strong>SSH访问:</strong> 请在NAT转发页面添加22端口映射</li>
+                    <li class="mb-2"><i class="fab fa-github mr-2"></i><strong>项目关联:</strong> By Github <a href="https://github.com/xkatld/lxdapi-web-server" target="_blank">xkatld</a></li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="fas fa-sync-alt text-primary mr-2"></i>数据定时自动刷新</li>
+                    <li class="mb-2"><i class="fas fa-mouse-pointer text-info mr-2"></i>点击刷新按钮可手动更新数据</li>
+                    <li class="mb-2"><i class="fas fa-chart-bar text-danger mr-2"></i>资源使用率过高时请注意监控</li>
+                    <li class="mb-2"><i class="fas fa-code-branch text-secondary mr-2"></i><strong>版本:</strong> v1.1.0</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+const INFO_DEBUG_MODE = false;
+
+var currentInfoContainerId = '';
+var cpuChart, memoryChart, diskChart, trafficChart;
+
+function infoDebug(message, data) {
+    if (INFO_DEBUG_MODE) {
+        console.log('[INFO-DEBUG]', message, data);
+    }
+}
+
+// 初始化 Chart.js 图表
+function initCharts() {
+    const chartConfig = {
+        type: 'line',
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { display: false },
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    grid: { color: '#f0f0f0' },
+                    ticks: { 
+                        color: '#999', 
+                        font: { size: 9 },
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            },
+            elements: {
+                line: { tension: 0.4, borderWidth: 2 },
+                point: { radius: 0, hitRadius: 10, hoverRadius: 3 }
+            }
+        }
+    };
+
+    const maxDataPoints = 20;
+    const labels = Array(maxDataPoints).fill('');
+
+    cpuChart = new Chart(document.getElementById('cpuChart'), {
+        ...chartConfig,
+        data: {
+            labels: labels,
+            datasets: [{ data: Array(maxDataPoints).fill(0), borderColor: '#007bff', backgroundColor: 'rgba(0, 123, 255, 0.1)', fill: true }]
+        }
+    });
+
+    memoryChart = new Chart(document.getElementById('memoryChart'), {
+        ...chartConfig,
+        data: {
+            labels: labels,
+            datasets: [{ data: Array(maxDataPoints).fill(0), borderColor: '#28a745', backgroundColor: 'rgba(40, 167, 69, 0.1)', fill: true }]
+        }
+    });
+
+    diskChart = new Chart(document.getElementById('diskChart'), {
+        ...chartConfig,
+        data: {
+            labels: labels,
+            datasets: [{ data: Array(maxDataPoints).fill(0), borderColor: '#17a2b8', backgroundColor: 'rgba(23, 162, 184, 0.1)', fill: true }]
+        }
+    });
+
+    trafficChart = new Chart(document.getElementById('trafficChart'), {
+        ...chartConfig,
+        data: {
+            labels: labels,
+            datasets: [{ data: Array(maxDataPoints).fill(0), borderColor: '#ffc107', backgroundColor: 'rgba(255, 193, 7, 0.1)', fill: true }]
+        }
+    });
+}
+
+function updateChart(chart, value) {
+    if (!chart) return;
+    const data = chart.data.datasets[0].data;
+    data.shift();
+    data.push(value);
+    chart.update('none');
+}
+
+function refreshInfoPage() {
+    infoDebug('手动刷新信息页面');
+    updateLastUpdateTime();
+    loadContainerInfo();
+}
+
+window.refreshInfoPage = refreshInfoPage;
+
+function updateLastUpdateTime() {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('zh-CN', {
+        hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+    const lastUpdateElement = document.getElementById('last-update');
+    if (lastUpdateElement) {
+        lastUpdateElement.textContent = timeString;
+    }
+}
+
+function loadContainerInfo() {
+    if (!currentInfoContainerId) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const containerId = urlParams.get('id');
+
+        if (!containerId) {
+            showError('无法获取容器ID');
+            return;
+        }
+        currentInfoContainerId = containerId;
+    }
+
+    $('#last-update').html('<i class="fas fa-spinner fa-spin"></i> 更新中...');
+    loadAllInfoData(currentInfoContainerId);
+}
+
+function loadAllInfoData(containerId) {
+    const timestamp = new Date().getTime();
+    const infoUrl = `/provision/custom/content?id=${containerId}&key=info&action=getinfoall&_t=${timestamp}`;
+
+    infoDebug('API请求', infoUrl);
+
+    $.ajax({
+        url: infoUrl,
+        method: 'GET',
+        dataType: 'json',
+        timeout: 10000,
+        cache: false,
+        success: function(response) {
+            infoDebug('API响应', response);
+            if (response && response.code === 200 && response.data) {
+                updateAllInfo(response.data);
+            } else {
+                showError(response.msg || '获取容器信息失败');
+            }
+        },
+        error: function(xhr, status, error) {
+            infoDebug('API请求失败', {status: xhr.status, error: error});
+            showError('网络请求失败: ' + error);
+        }
+    });
+}
+
+function updateAllInfo(data) {
+    const cpuUsage = data.cpu_usage || 0;
+    const cpuCores = data.cpus || 1;
+    const cpuUsageFormatted = parseFloat(cpuUsage).toFixed(1);
+    $('#cpu-info').text(`${cpuUsageFormatted}% / ${cpuCores}核`);
+    updateChart(cpuChart, parseFloat(cpuUsage));
+
+    const memoryUsage = data.memory_usage || 'N/A';
+    const memoryTotal = (data.config && data.config.memory) || 'N/A';
+    const memoryPercent = parseFloat(data.memory_percent) || 0;
+    $('#memory-info').text(`${memoryUsage} / ${memoryTotal}`);
+    updateChart(memoryChart, memoryPercent);
+
+    function formatDiskSize(value) {
+        if (typeof value === 'string') {
+            return value;
+        }
+        
+        const num = parseFloat(value);
+        if (isNaN(num)) return 'N/A';
+        
+        return num + ' MB';
+    }
+
+    const diskUsage = data.disk_usage || 'N/A';
+    let diskTotal = 'N/A';
+    
+    if (data.config && data.config.disk) {
+        diskTotal = formatDiskSize(data.config.disk);
+    } else if (data.disk) {
+        diskTotal = formatDiskSize(data.disk);
+    }
+    
+    const diskPercent = parseFloat(data.disk_percent) || 0;
+    $('#disk-info').text(`${diskUsage} / ${diskTotal}`);
+    updateChart(diskChart, diskPercent);
+
+    const trafficUsage = data.traffic_usage || 'N/A';
+    const trafficUsageRaw = data.traffic_usage_raw || 0;
+    const trafficLimit = data.config && data.config.traffic_limit ? data.config.traffic_limit : 0;
+    
+    if (trafficLimit > 0) {
+        const trafficLimitGB = trafficLimit;
+        const trafficUsageGB = (trafficUsageRaw / (1024 * 1024 * 1024)).toFixed(2);
+        const trafficPercent = Math.min((parseFloat(trafficUsageGB) / trafficLimitGB) * 100, 100).toFixed(1);
+        
+        $('#traffic-info').text(`${trafficUsageGB} GB / ${trafficLimitGB} GB`);
+        updateChart(trafficChart, parseFloat(trafficPercent));
+    } else {
+        $('#traffic-info').text(`累计: ${trafficUsage}`);
+        updateChart(trafficChart, 0);
+    }
+
+    if (data.last_update) {
+        $('#last-update').text(data.last_update);
+    } else {
+        updateLastUpdateTime();
+    }
+}
+
+function showError(message) {
+    $('#cpu-info').text('加载失败');
+    $('#memory-info').text('加载失败');
+    $('#disk-info').text('加载失败');
+    $('#traffic-info').text('加载失败');
+
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('zh-CN', {
+        hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+    $('#last-update').text(`${timeString} (错误)`);
+    infoDebug('加载错误', message);
+}
+
+$(document).ready(function() {
+    // 等待 Chart.js 加载完成
+    const waitForChart = setInterval(function() {
+        if (window.chartJsLoaded || typeof Chart !== 'undefined') {
+            clearInterval(waitForChart);
+            
+            // 初始化图表
+            initCharts();
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const containerId = urlParams.get('id');
+
+            if (!containerId) {
+                showError('无法获取容器ID');
+                return;
+            }
+
+            currentInfoContainerId = containerId;
+            infoDebug('设置容器ID', containerId);
+
+            updateLastUpdateTime();
+
+            loadContainerInfo();
+
+            setInterval(function() {
+                infoDebug('定时器触发，刷新容器信息');
+                loadContainerInfo();
+            }, 10000);
+        }
+    }, 50);
+    
+    // 5秒超时保护
+    setTimeout(function() {
+        clearInterval(waitForChart);
+        if (!cpuChart) {
+            console.error('Chart.js 加载超时');
+        }
+    }, 5000);
+});
+</script>

@@ -1,0 +1,2000 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "魔方财务系统专用LXD容器管理后端API服务",
+        "title": "魔方财务-LXD对接API",
+        "termsOfService": "https://github.com/xkatld/zjmf-lxd-server",
+        "contact": {
+            "name": "API支持",
+            "url": "https://github.com/xkatld/zjmf-lxd-server",
+            "email": "support@example.com"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://github.com/xkatld/zjmf-lxd-server/blob/main/LICENSE"
+        },
+        "version": "1.1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/api/addport": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "为容器创建外部端口到内部端口的映射",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "NAT管理"
+                ],
+                "summary": "添加NAT端口转发",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "容器名称",
+                        "name": "hostname",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "maximum": 65535,
+                        "minimum": 10000,
+                        "type": "integer",
+                        "description": "外网端口",
+                        "name": "dport",
+                        "in": "formData"
+                    },
+                    {
+                        "maximum": 65535,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "内网端口",
+                        "name": "sport",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "tcp",
+                            "udp"
+                        ],
+                        "type": "string",
+                        "description": "协议",
+                        "name": "dtype",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "描述",
+                        "name": "description",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.NATOperationResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "认证失败",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/boot": {
+            "get": {
+                "description": "提交容器开机任务",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "容器管理"
+                ],
+                "summary": "启动容器",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "容器名称",
+                        "name": "hostname",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.LXDServerResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/cache/containers": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "从缓存中获取所有容器信息（lxdweb专用接口）",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "缓存接口"
+                ],
+                "summary": "获取所有容器缓存",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/cache/containers/refresh": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "从LXD重新获取所有容器并更新到缓存数据库",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "缓存接口"
+                ],
+                "summary": "刷新容器列表缓存",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/check": {
+            "get": {
+                "description": "检查API连接与LXD服务状态",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "容器管理"
+                ],
+                "summary": "API检查",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.LXDServerCheckResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/console/create-token": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "创建用于WebSocket控制台连接的安全令牌",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Web控制台"
+                ],
+                "summary": "创建控制台访问令牌",
+                "parameters": [
+                    {
+                        "description": "令牌参数",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/console/sessions": {
+            "get": {
+                "tags": [
+                    "Console"
+                ],
+                "summary": "获取会话列表",
+                "responses": {
+                    "200": {
+                        "description": "会话列表",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/console/sessions/{sessionId}": {
+            "delete": {
+                "tags": [
+                    "Console"
+                ],
+                "summary": "关闭会话",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "会话ID",
+                        "name": "sessionId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "关闭结果",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/console/status": {
+            "get": {
+                "tags": [
+                    "Console"
+                ],
+                "summary": "获取控制台状态",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "容器名称",
+                        "name": "hostname",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "状态信息",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/console/ws": {
+            "get": {
+                "tags": [
+                    "Console"
+                ],
+                "summary": "WebSocket控制台连接",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "容器名称",
+                        "name": "hostname",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/console/ws-token": {
+            "get": {
+                "tags": [
+                    "Web控制台"
+                ],
+                "summary": "基于令牌的WebSocket控制台",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "访问令牌",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/create": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "通过魔方财务创建 LXD 容器",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "容器管理"
+                ],
+                "summary": "创建容器",
+                "parameters": [
+                    {
+                        "description": "创建参数",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.LXDServerCreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.LXDServerResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "认证失败",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/delete": {
+            "get": {
+                "description": "提交容器删除任务",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "容器管理"
+                ],
+                "summary": "删除容器",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "容器名称",
+                        "name": "hostname",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.LXDServerResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/delport": {
+            "post": {
+                "description": "删除容器的NAT端口映射",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "NAT管理"
+                ],
+                "summary": "删除NAT端口转发",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "容器名称",
+                        "name": "hostname",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "maximum": 65535,
+                        "minimum": 10000,
+                        "type": "integer",
+                        "description": "外网端口",
+                        "name": "dport",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "maximum": 65535,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "内网端口",
+                        "name": "sport",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "tcp",
+                            "udp"
+                        ],
+                        "type": "string",
+                        "description": "协议",
+                        "name": "dtype",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.NATOperationResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/info": {
+            "get": {
+                "description": "获取容器基础信息和实时统计",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "容器管理"
+                ],
+                "summary": "查询容器信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "容器名称",
+                        "name": "hostname",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.LXDServerInfoResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/ipv6/add": {
+            "post": {
+                "description": "为容器添加独立的公网IPv6地址绑定",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "IPv6绑定"
+                ],
+                "summary": "添加IPv6独立绑定",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "容器名称",
+                        "name": "hostname",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "绑定描述",
+                        "name": "description",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.IPv6BindingResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/ipv6/delete": {
+            "post": {
+                "description": "删除容器的独立公网IPv6地址绑定",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "IPv6绑定"
+                ],
+                "summary": "删除IPv6独立绑定",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "容器名称",
+                        "name": "hostname",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "公网IPv6地址",
+                        "name": "public_ipv6",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.IPv6BindingResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/ipv6/list": {
+            "get": {
+                "description": "获取指定容器的IPv6绑定列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "IPv6绑定"
+                ],
+                "summary": "获取IPv6绑定列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "容器名称",
+                        "name": "hostname",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.IPv6BindingListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/ipv6/status": {
+            "get": {
+                "description": "检查系统IPv6绑定功能状态",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "IPv6绑定"
+                ],
+                "summary": "检查IPv6绑定状态",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.IPv6BindingStatusResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/list": {
+            "get": {
+                "description": "获取所有LXD容器的名称列表（仅返回hostname和status，用于轻量级查询）",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "容器管理"
+                ],
+                "summary": "获取容器名称列表",
+                "responses": {
+                    "200": {
+                        "description": "code: 200, msg: success, data: []string",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/nat/check": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "校验指定端口是否被占用",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "NAT管理"
+                ],
+                "summary": "检查外网端口是否可用",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "容器名称",
+                        "name": "hostname",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 65535,
+                        "minimum": 10000,
+                        "type": "integer",
+                        "description": "外网端口",
+                        "name": "port",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "tcp",
+                            "udp"
+                        ],
+                        "type": "string",
+                        "description": "协议",
+                        "name": "protocol",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.NATPortCheckResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "认证失败",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/nat/list": {
+            "get": {
+                "description": "列出所有NAT端口转发规则",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "NAT管理"
+                ],
+                "summary": "获取所有NAT规则列表",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.NATListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/natlist": {
+            "get": {
+                "description": "列出容器所有NAT端口转发",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "NAT管理"
+                ],
+                "summary": "获取NAT规则列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "容器名称",
+                        "name": "hostname",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.NATListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/password": {
+            "post": {
+                "description": "提交密码重置任务",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "容器管理"
+                ],
+                "summary": "重置密码",
+                "parameters": [
+                    {
+                        "description": "密码参数",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.LXDServerResetPasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.LXDServerResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/proxy/add": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "为容器添加Nginx反向代理规则",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "反向代理"
+                ],
+                "summary": "添加反向代理",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "容器名称",
+                        "name": "hostname",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "域名",
+                        "name": "domain",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 80,
+                        "description": "容器端口",
+                        "name": "container_port",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "描述",
+                        "name": "description",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProxyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProxyResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProxyResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/proxy/all": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "获取系统中的所有反向代理规则",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "反向代理"
+                ],
+                "summary": "获取所有代理规则",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProxyListResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProxyResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/proxy/check": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "检查域名是否已被使用",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "反向代理"
+                ],
+                "summary": "检查域名可用性",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "域名",
+                        "name": "domain",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProxyCheckResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProxyResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/proxy/delete": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "删除容器的反向代理规则",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "反向代理"
+                ],
+                "summary": "删除反向代理",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "容器名称",
+                        "name": "hostname",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "域名",
+                        "name": "domain",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProxyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProxyResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProxyResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProxyResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/proxy/list": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "获取指定容器的所有反向代理规则",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "反向代理"
+                ],
+                "summary": "获取容器代理列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "容器名",
+                        "name": "hostname",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProxyListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProxyResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/proxy/regenerate": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "重新生成所有反向代理配置文件（启动时恢复功能）",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "反向代理"
+                ],
+                "summary": "重新生成配置",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProxyResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProxyResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/reboot": {
+            "get": {
+                "description": "提交容器重启任务",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "容器管理"
+                ],
+                "summary": "重启容器",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "容器名称",
+                        "name": "hostname",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.LXDServerResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/reinstall": {
+            "post": {
+                "description": "提交容器重装任务",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "容器管理"
+                ],
+                "summary": "重装容器系统",
+                "parameters": [
+                    {
+                        "description": "重装参数",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.LXDServerReinstallRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.LXDServerResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/status": {
+            "get": {
+                "description": "获取容器当前状态",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "容器管理"
+                ],
+                "summary": "查询容器状态",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "容器名称",
+                        "name": "hostname",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.LXDServerStatusResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/stop": {
+            "get": {
+                "description": "提交容器关机任务",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "容器管理"
+                ],
+                "summary": "关闭容器",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "容器名称",
+                        "name": "hostname",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.LXDServerResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/suspend": {
+            "get": {
+                "description": "提交容器暂停任务",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "容器管理"
+                ],
+                "summary": "暂停容器",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "容器名称",
+                        "name": "hostname",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.LXDServerResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/traffic": {
+            "get": {
+                "description": "获取容器当前的流量统计信息",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "流量管理"
+                ],
+                "summary": "获取容器流量",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "容器名称",
+                        "name": "hostname",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.LXDServerTrafficResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/traffic/reset": {
+            "post": {
+                "description": "重置容器流量并重新启动统计",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "流量管理"
+                ],
+                "summary": "重置流量统计",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "容器名称",
+                        "name": "hostname",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.LXDServerTrafficResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/unsuspend": {
+            "get": {
+                "description": "提交容器恢复任务",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "容器管理"
+                ],
+                "summary": "恢复容器",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "容器名称",
+                        "name": "hostname",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.LXDServerResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/console": {
+            "get": {
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "Web控制台"
+                ],
+                "summary": "控制台Web页面",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "访问令牌",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/metrics": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System"
+                ],
+                "summary": "获取系统指标",
+                "responses": {
+                    "200": {
+                        "description": "性能指标",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "handlers.LXDServerCheckResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 200
+                },
+                "data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "msg": {
+                    "type": "string",
+                    "example": "API连接正常"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.LXDServerInfoResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 200
+                },
+                "data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "msg": {
+                    "type": "string",
+                    "example": "获取容器信息成功"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.LXDServerStatusResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 200
+                },
+                "data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "msg": {
+                    "type": "string",
+                    "example": "获取容器状态成功"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.LXDServerTrafficResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {},
+                "msg": {
+                    "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CreateTokenRequest": {
+            "type": "object",
+            "required": [
+                "hostname"
+            ],
+            "properties": {
+                "expires_in": {
+                    "type": "integer"
+                },
+                "hostname": {
+                    "type": "string"
+                },
+                "server_ip": {
+                    "type": "string"
+                },
+                "service_id": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.IPv6BindingListResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.IPv6BindingRule"
+                    }
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.IPv6BindingResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {},
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.IPv6BindingRule": {
+            "type": "object",
+            "properties": {
+                "container_ipv6": {
+                    "description": "容器内网IPv6地址",
+                    "type": "string"
+                },
+                "container_name": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "interface": {
+                    "description": "绑定的网卡接口",
+                    "type": "string"
+                },
+                "public_ipv6": {
+                    "description": "公网IPv6地址",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "active, inactive, error",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.IPv6BindingStatusData": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "interface": {
+                    "type": "string"
+                },
+                "pool_info": {
+                    "$ref": "#/definitions/models.IPv6PoolStatus"
+                }
+            }
+        },
+        "models.IPv6BindingStatusResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.IPv6BindingStatusData"
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.IPv6PoolStatus": {
+            "type": "object",
+            "properties": {
+                "pool_size": {
+                    "type": "integer"
+                },
+                "prefix_length": {
+                    "type": "integer"
+                },
+                "start": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.LXDServerCreateRequest": {
+            "type": "object",
+            "required": [
+                "hostname"
+            ],
+            "properties": {
+                "allow_nesting": {
+                    "description": "允许嵌套",
+                    "type": "boolean",
+                    "example": false
+                },
+                "cpu_allowance": {
+                    "description": "CPU 高级配置",
+                    "type": "string",
+                    "example": "50%"
+                },
+                "cpus": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "disk": {
+                    "description": "硬盘(支持单位)",
+                    "type": "string",
+                    "example": "512MB"
+                },
+                "disk_io_limit": {
+                    "description": "磁盘IO限制",
+                    "type": "string",
+                    "example": "100MB"
+                },
+                "egress": {
+                    "description": "下行带宽(支持单位) - 容器接收数据限制",
+                    "type": "string",
+                    "example": "100Mbit"
+                },
+                "enable_lxcfs": {
+                    "description": "LXCFS 配置",
+                    "type": "boolean",
+                    "example": true
+                },
+                "hostname": {
+                    "description": "容器主机名（对应容器名）",
+                    "type": "string",
+                    "example": "test-container"
+                },
+                "image": {
+                    "description": "镜像",
+                    "type": "string",
+                    "example": "debian/12"
+                },
+                "ingress": {
+                    "description": "上行带宽(支持单位) - 容器发送数据限制",
+                    "type": "string",
+                    "example": "100Mbit"
+                },
+                "max_processes": {
+                    "description": "进程和文件限制",
+                    "type": "integer",
+                    "example": 512
+                },
+                "memory": {
+                    "description": "内存(支持单位)",
+                    "type": "string",
+                    "example": "256MB"
+                },
+                "memory_swap": {
+                    "description": "内存高级配置",
+                    "type": "boolean",
+                    "example": true
+                },
+                "network_mode": {
+                    "type": "string",
+                    "example": "mode1"
+                },
+                "password": {
+                    "description": "root密码",
+                    "type": "string",
+                    "example": "password123"
+                },
+                "privileged": {
+                    "description": "是否允许特权模式",
+                    "type": "boolean",
+                    "example": false
+                },
+                "traffic_limit": {
+                    "type": "integer",
+                    "example": 100
+                }
+            }
+        },
+        "models.LXDServerReinstallRequest": {
+            "type": "object",
+            "required": [
+                "hostname",
+                "system"
+            ],
+            "properties": {
+                "allow_nesting": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "cpu_allowance": {
+                    "description": "CPU 高级配置",
+                    "type": "string",
+                    "example": "50%"
+                },
+                "cpus": {
+                    "description": "基础配置（重装时重新应用）",
+                    "type": "integer",
+                    "example": 2
+                },
+                "disk": {
+                    "type": "string",
+                    "example": "512MB"
+                },
+                "disk_io_limit": {
+                    "description": "磁盘IO限制",
+                    "type": "string",
+                    "example": "100MB"
+                },
+                "egress": {
+                    "type": "string",
+                    "example": "100Mbit"
+                },
+                "enable_lxcfs": {
+                    "description": "LXCFS 配置",
+                    "type": "boolean",
+                    "example": true
+                },
+                "hostname": {
+                    "description": "容器主机名",
+                    "type": "string",
+                    "example": "test-container"
+                },
+                "ingress": {
+                    "type": "string",
+                    "example": "100Mbit"
+                },
+                "max_processes": {
+                    "description": "进程和文件限制",
+                    "type": "integer",
+                    "example": 512
+                },
+                "memory": {
+                    "type": "string",
+                    "example": "256MB"
+                },
+                "memory_swap": {
+                    "description": "内存高级配置",
+                    "type": "boolean",
+                    "example": true
+                },
+                "password": {
+                    "description": "新的root密码",
+                    "type": "string",
+                    "example": "newpassword123"
+                },
+                "privileged": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "system": {
+                    "description": "新的操作系统镜像",
+                    "type": "string",
+                    "example": "debian/12"
+                },
+                "traffic_limit": {
+                    "type": "integer",
+                    "example": 100
+                }
+            }
+        },
+        "models.LXDServerResetPasswordRequest": {
+            "type": "object",
+            "required": [
+                "hostname",
+                "password"
+            ],
+            "properties": {
+                "hostname": {
+                    "type": "string",
+                    "example": "test-container"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "newpassword123"
+                }
+            }
+        },
+        "models.LXDServerResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {},
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.NATListResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.NATRule"
+                    }
+                },
+                "msg": {
+                    "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.NATOperationResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.NATPortCheckData": {
+            "type": "object",
+            "properties": {
+                "available": {
+                    "type": "boolean"
+                },
+                "reason": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.NATPortCheckResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.NATPortCheckData"
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.NATRule": {
+            "type": "object",
+            "properties": {
+                "container_name": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "external_port": {
+                    "type": "integer"
+                },
+                "external_port_end": {
+                    "description": "端口段结束，0表示单端口",
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "internal_port": {
+                    "type": "integer"
+                },
+                "internal_port_end": {
+                    "description": "端口段结束，0表示单端口",
+                    "type": "integer"
+                },
+                "ip_version": {
+                    "description": "ipv4, ipv6, dual",
+                    "type": "string"
+                },
+                "nat_method": {
+                    "description": "固定为iptables",
+                    "type": "string"
+                },
+                "protocol": {
+                    "description": "tcp, udp, both",
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ProxyCheckData": {
+            "type": "object",
+            "properties": {
+                "available": {
+                    "type": "boolean"
+                },
+                "reason": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ProxyCheckResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.ProxyCheckData"
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ProxyListResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ProxyRule"
+                    }
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ProxyResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {},
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ProxyRule": {
+            "type": "object",
+            "properties": {
+                "container_name": {
+                    "type": "string"
+                },
+                "container_port": {
+                    "description": "容器端口",
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "domain": {
+                    "description": "唯一域名",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "ssl_cert_path": {
+                    "description": "证书文件路径",
+                    "type": "string"
+                },
+                "ssl_enabled": {
+                    "description": "是否启用SSL",
+                    "type": "boolean"
+                },
+                "ssl_key_path": {
+                    "description": "私钥文件路径",
+                    "type": "string"
+                },
+                "ssl_type": {
+                    "description": "none, self-signed, custom",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "active, inactive",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "description": "在header中添加apikey字段，值为配置文件中的api_hash",
+            "type": "apiKey",
+            "name": "apikey",
+            "in": "header"
+        }
+    }
+}

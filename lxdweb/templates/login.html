@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .title }}</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+    <style>
+        .input-transition {
+            transition: all 0.25s ease;
+        }
+        .input-transition:focus {
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+        <div class="text-center mb-8">
+            <div class="flex justify-center mb-4">
+                <div class="bg-gradient-to-br from-blue-500 to-indigo-600 p-4 rounded-2xl shadow-lg">
+                    <span class="iconify text-white" data-icon="mdi:server-network" data-width="48" data-height="48"></span>
+                </div>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">LXD 管理后台</h1>
+            <p class="text-gray-600 flex items-center justify-center gap-2">
+                <span class="iconify" data-icon="mdi:lock" data-width="16"></span>
+                请登录以继续
+            </p>
+        </div>
+        <form id="loginForm" class="space-y-5">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <span class="iconify text-blue-500" data-icon="mdi:account" data-width="18"></span>
+                    用户名
+                </label>
+                <input 
+                    type="text" 
+                    name="username" 
+                    required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent input-transition shadow-sm"
+                    placeholder="请输入用户名"
+                >
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <span class="iconify text-blue-500" data-icon="mdi:lock" data-width="18"></span>
+                    密码
+                </label>
+                <input 
+                    type="password" 
+                    name="password" 
+                    required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent input-transition shadow-sm"
+                    placeholder="请输入密码"
+                >
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <span class="iconify text-blue-500" data-icon="mdi:shield-check" data-width="18"></span>
+                    验证码
+                </label>
+                <div class="flex space-x-3">
+                    <input 
+                        type="text" 
+                        name="captcha" 
+                        required
+                        maxlength="4"
+                        class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent input-transition shadow-sm"
+                        placeholder="请输入验证码"
+                    >
+                    <img 
+                        id="captchaImg" 
+                        src="" 
+                        alt="验证码"
+                        class="h-12 w-32 border border-gray-300 rounded-lg cursor-pointer hover:opacity-90 transition-all shadow-sm"
+                        onclick="refreshCaptcha()"
+                        title="点击刷新"
+                    >
+                </div>
+            </div>
+            <div id="errorMsg" class="hidden bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
+                <span class="iconify" data-icon="mdi:alert-circle" data-width="18"></span>
+                <span id="errorText"></span>
+            </div>
+            <button 
+                type="submit"
+                class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+            >
+                <span class="iconify" data-icon="mdi:login" data-width="20"></span>
+                登 录
+            </button>
+        </form>
+    </div>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            refreshCaptcha();
+        });
+        async function refreshCaptcha() {
+            try {
+                const response = await fetch('/api/captcha');
+                const result = await response.json();
+                if (result.code === 200) {
+                    document.getElementById('captchaImg').src = result.image;
+                }
+            } catch (error) {
+                console.error('获取验证码失败:', error);
+            }
+        }
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+                const result = await response.json();
+                if (result.code === 200) {
+                    window.location.href = result.data.redirect;
+                } else {
+                    showError(result.msg);
+                    refreshCaptcha();
+                    document.querySelector('input[name="captcha"]').value = '';
+                }
+            } catch (error) {
+                showError('登录失败，请重试');
+                refreshCaptcha();
+            }
+        });
+        function showError(msg) {
+            const errorDiv = document.getElementById('errorMsg');
+            const errorText = document.getElementById('errorText');
+            errorText.textContent = msg;
+            errorDiv.classList.remove('hidden');
+            setTimeout(() => {
+                errorDiv.classList.add('hidden');
+            }, 4000);
+        }
+    </script>
+</body>
+</html>

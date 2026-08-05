@@ -1,0 +1,151 @@
+# ==========================================
+# 核心系统配置
+# ==========================================
+system:
+  server:
+    # 服务端口
+    port: ${SERVER_PORT}
+    # 运行模式 debug | release
+    mode: release
+    tls:
+      # TLS 证书文件路径
+      cert_file: "server.crt"
+      # TLS 私钥文件路径
+      key_file: "server.key"
+      # 是否自动生成自签名证书
+      auto_gen: true
+      # 服务器外网 IP 列表（用于证书 SAN）
+      server_ips:
+        - "${PUBLIC_NETWORK_IP_ADDRESS}"
+
+  security:
+    # API 访问验证密钥
+    api_hash: "${API_ACCESS_HASH}"
+
+  database:
+    # 数据库类型 (仅支持 sqlite)
+    type: "${DB_TYPE}"
+
+    # SQLite 配置
+    sqlite_path: "lxdapi.db"
+
+    # 兼容旧版本配置字段
+    path: "lxdapi.db"
+
+  cors:
+    # 允许跨域的源列表
+    allow_origins: ["*"]
+    # 是否允许携带凭证
+    allow_credentials: true
+
+# ==========================================
+# 日志配置
+# ==========================================
+logging:
+  # 日志级别 debug | info | warn | error
+  level: "error"
+  # 日志文件保存路径
+  file: "/opt/lxdapi/app.log"
+  # 单个日志文件最大大小（MB）
+  max_size: 10
+  # 保留的旧日志文件数量
+  max_backups: 1
+  # 保留的旧日志文件天数
+  max_age: 30
+  # 是否压缩旧日志文件
+  compress: true
+  # 开发模式（控制台输出格式）
+  dev_mode: false
+
+# ==========================================
+# 任务管理配置
+# ==========================================
+task_queue:
+  # 队列后端类型 (仅支持 database)
+  backend: "database"
+  # Worker 并发数量（自动根据CPU核心数设置）
+  worker_count: ${WORKER_COUNT}
+  # 轮询间隔（毫秒）
+  poll_interval: 100
+
+task_status:
+  # 任务记录保留时间（小时）
+  retention_hours: 72
+
+# ==========================================
+# 容器管理配置
+# ==========================================
+container_api:
+  # 存储池列表（按顺序尝试）
+  storage_pools: [${STORAGE_POOLS}]
+
+# ==========================================
+# 流量管理配置
+# ==========================================
+traffic_api:
+  # 流量统计间隔（秒）
+  interval: ${TRAFFIC_INTERVAL}
+  # 每批处理的容器数量
+  batch_size: ${TRAFFIC_BATCH_SIZE}
+
+  limit_check:
+    # 流量限制检测间隔（秒）
+    check_interval: ${TRAFFIC_LIMIT_CHECK_INTERVAL}
+    # 每批检查的容器数量
+    batch_size: ${TRAFFIC_LIMIT_CHECK_BATCH_SIZE}
+
+  auto_reset:
+    # 自动重置检查间隔（秒）
+    check_interval: ${TRAFFIC_AUTO_RESET_INTERVAL}
+    # 每批重置检查的容器数量
+    batch_size: ${TRAFFIC_AUTO_RESET_BATCH_SIZE}
+
+# ==========================================
+# 控制台配置
+# ==========================================
+console_api:
+  # 会话超时时间（秒）
+  session_timeout: 1800
+
+# ==========================================
+# 网络功能配置
+# ==========================================
+
+# NAT 端口转发配置
+nat_api:
+  # NAT 端口转发功能总开关
+  enabled: ${NAT_SUPPORT}
+
+  network:
+    # 外网网卡接口名称
+    external_interface: "${NETWORK_EXTERNAL_INTERFACE}"
+    # 外网 IPv4 地址列表
+    external_ips: ["${NETWORK_EXTERNAL_IPV4}"]
+    # 内网网卡接口名称
+    internal_interface: "lxdbr0"
+
+  container_ip:
+    # 优先使用的容器网卡
+    preferred_interfaces: ["eth0"]
+    # 忽略的网卡前缀
+    ignored_interfaces: ["docker0", "br-"]
+
+# IPv6 独立绑定配置
+ipv6_binding:
+  # IPv6 独立绑定功能总开关
+  enabled: ${IPV6_BINDING_ENABLED}
+  # IPv6 绑定使用的网卡接口
+  interface: "${IPV6_BINDING_INTERFACE}"
+  # IPv6 地址池配置
+  ipv6_pool:
+    # IPv6 起始地址
+    start: "${IPV6_POOL_START}"
+    # 前缀长度
+    prefix_length: ${IPV6_POOL_PREFIX}
+    # 地址池大小
+    pool_size: ${IPV6_POOL_SIZE}
+
+# Nginx 反向代理配置
+proxy_api:
+  # 反向代理功能总开关
+  enabled: ${NGINX_PROXY_ENABLED}

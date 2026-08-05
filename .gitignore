@@ -1,0 +1,28 @@
+# Database files
+lxdapi.db
+lxdapi.db-shm
+lxdapi.db-wal
+lxdweb.db
+lxdweb.db-shm
+lxdweb.db-wal
+
+# Binary files
+lxdapi-amd64
+lxdapi-arm64
+archive.tar.gz
+lxdimages-amd64
+lxdimages-arm64
+lxdweb-amd64
+lxdweb-arm64
+
+# Log files
+*.log
+lxdapi/app.log*
+lxdweb/lxdweb.log*
+
+# Certificate files
+lxdapi/cert.pem
+lxdapi/key.pem
+lxdweb/cert.pem
+lxdweb/key.pem
+AGENTS.md

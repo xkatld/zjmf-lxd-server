@@ -1,0 +1,78 @@
+{{define "header.html"}}
+<!-- Iconify 图标库 -->
+<script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+
+<!-- 全局交互样式 -->
+<style>
+    /* 加载状态脉冲动画 */
+    @keyframes gentlePulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.85; }
+    }
+    
+    .animate-pulse-slow { animation: gentlePulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    
+    /* 卡片悬停效果 */
+    .card-hover {
+        transition: all 0.25s ease;
+    }
+    .card-hover:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px -8px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* 按钮悬停效果 */
+    .btn-hover {
+        transition: all 0.25s ease;
+    }
+    .btn-hover:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .btn-hover:active {
+        transform: translateY(0);
+    }
+    
+    /* 平滑过渡 */
+    .smooth-transition {
+        transition: all 0.25s ease;
+    }
+</style>
+
+<nav class="bg-white shadow-lg">
+    <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center py-4">
+            <div class="flex items-center space-x-4">
+                <a href="/dashboard" class="flex items-center space-x-2 smooth-transition hover:scale-105">
+                    <span class="iconify text-blue-600" data-icon="mdi:server-network" data-width="32" data-height="32"></span>
+                    <h1 class="text-2xl font-bold text-blue-600">LXD 管理后台</h1>
+                </a>
+                <div class="hidden md:flex space-x-1 ml-8">
+                    <a href="/dashboard" class="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg text-sm font-medium smooth-transition">
+                        <div class="flex items-center gap-2">
+                            <span class="iconify" data-icon="mdi:view-dashboard" data-width="20"></span>
+                            仪表盘
+                        </div>
+                    </a>
+                    <a href="/nodes" class="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg text-sm font-medium smooth-transition">
+                        <div class="flex items-center gap-2">
+                            <span class="iconify" data-icon="mdi:server" data-width="20"></span>
+                            节点管理
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2 text-gray-700 bg-gray-50 px-3 py-2 rounded-lg smooth-transition hover:bg-gray-100">
+                    <span class="iconify text-gray-500" data-icon="mdi:account-circle" data-width="20"></span>
+                    <span class="text-sm font-medium">{{.username}}</span>
+                </div>
+                <a href="/logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium btn-hover shadow-sm flex items-center gap-2">
+                    <span class="iconify" data-icon="mdi:logout" data-width="16"></span>
+                    退出登录
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+{{end}}

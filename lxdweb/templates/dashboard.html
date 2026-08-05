@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body class="bg-gray-50">
+    {{template "header.html" .}}
+    
+    <div class="container mx-auto px-4 py-8">
+        <!-- 页面标题 -->
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-800 flex items-center gap-3">
+                <span class="iconify text-blue-600" data-icon="mdi:view-dashboard" data-width="36"></span>
+                仪表盘
+            </h1>
+            <p class="text-gray-600 mt-1">系统概览与快速操作</p>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- 节点统计 -->
+            <div class="bg-white rounded-lg border border-gray-200 p-6 card-hover">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-md">
+                        <span class="iconify text-white" data-icon="mdi:server" data-width="28"></span>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-gray-600 font-medium mb-1">节点总数</p>
+                        <p class="text-3xl font-bold text-gray-800" id="nodeCount">-</p>
+                    </div>
+                </div>
+                <div class="pt-3 border-t border-gray-200 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                            <span class="text-sm text-gray-700">在线</span>
+                        </div>
+                        <span class="text-sm font-bold text-green-700" id="activeNodeCount">-</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
+                            <span class="text-sm text-gray-700">离线</span>
+                        </div>
+                        <span class="text-sm font-bold text-gray-600" id="inactiveNodeCount">-</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 bg-red-500 rounded-full"></span>
+                            <span class="text-sm text-gray-700">错误</span>
+                        </div>
+                        <span class="text-sm font-bold text-red-600" id="errorNodeCount">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 容器统计 -->
+            <div class="bg-white rounded-lg border border-gray-200 p-6 card-hover">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center shadow-md">
+                        <span class="iconify text-white" data-icon="mdi:cube-outline" data-width="28"></span>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-gray-600 font-medium mb-1">容器总数</p>
+                        <p class="text-3xl font-bold text-gray-800" id="containerCount">-</p>
+                    </div>
+                </div>
+                <div class="pt-3 border-t border-gray-200 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                            <span class="text-sm text-gray-700">运行中</span>
+                        </div>
+                        <span class="text-sm font-bold text-green-700" id="runningCount">-</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
+                            <span class="text-sm text-gray-700">已停止</span>
+                        </div>
+                        <span class="text-sm font-bold text-gray-600" id="stoppedCount">-</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                            <span class="text-sm text-gray-700">其他状态</span>
+                        </div>
+                        <span class="text-sm font-bold text-yellow-600" id="otherCount">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主要内容区域 -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- 节点列表 -->
+            <div class="lg:col-span-2 bg-white rounded-lg border border-gray-200 card-hover">
+                <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+                    <h2 class="text-base font-semibold text-gray-800 flex items-center gap-2">
+                        <span class="iconify text-blue-600" data-icon="mdi:format-list-bulleted" data-width="20"></span>
+                        节点列表
+                    </h2>
+                    <a href="/nodes" class="text-xs text-blue-600 hover:text-blue-800 font-medium smooth-transition flex items-center gap-1">
+                        查看全部
+                        <span class="iconify" data-icon="mdi:arrow-right" data-width="14"></span>
+                    </a>
+                </div>
+                <div id="nodesList" class="p-4">
+                    <p class="text-center py-8 text-gray-500 text-xs flex items-center justify-center gap-2">
+                        <span class="iconify animate-pulse-slow" data-icon="mdi:loading" data-width="16"></span>
+                        加载中...
+                    </p>
+                </div>
+            </div>
+
+            <!-- 快速操作 -->
+            <div class="bg-white rounded-lg border border-gray-200 card-hover">
+                <div class="p-4 border-b border-gray-200">
+                    <h2 class="text-base font-semibold text-gray-800 flex items-center gap-2">
+                        <span class="iconify text-blue-600" data-icon="mdi:lightning-bolt" data-width="20"></span>
+                        快速操作
+                    </h2>
+                </div>
+                <div class="p-4 space-y-3">
+                    <a href="/nodes" class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 smooth-transition group">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 smooth-transition">
+                            <span class="iconify text-blue-600" data-icon="mdi:server" data-width="20"></span>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold text-gray-800">节点管理</p>
+                            <p class="text-xs text-gray-600">管理所有LXD节点</p>
+                        </div>
+                        <span class="iconify text-gray-400 group-hover:text-blue-600 smooth-transition" data-icon="mdi:chevron-right" data-width="20"></span>
+                    </a>
+
+                    <div class="border border-gray-200 rounded-lg p-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-gray-700">系统状态</span>
+                            <span class="px-2 py-0.5 text-xs font-medium text-green-700 bg-green-100 rounded-full">正常</span>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="text-gray-600">最后更新</span>
+                                <span class="text-gray-800 font-medium" id="lastUpdateTime">-</span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="text-gray-600">刷新间隔</span>
+                                <span class="text-gray-800 font-medium">30秒</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{template "footer.html" .}}
+
+    <script>
+        let nodesData = [];
+
+        $(document).ready(function() {
+            loadDashboard();
+            setInterval(loadDashboard, 30000); // 每30秒刷新一次
+        });
+
+        async function loadDashboard() {
+            try {
+                // 加载节点数据
+                const nodesResp = await fetch('/api/nodes');
+                const nodesResult = await nodesResp.json();
+                if (nodesResult.code === 200) {
+                    nodesData = nodesResult.data || [];
+                    const activeNodes = nodesData.filter(n => n.status === 'active').length;
+                    const inactiveNodes = nodesData.filter(n => n.status === 'inactive').length;
+                    const errorNodes = nodesData.filter(n => n.status === 'error').length;
+                    
+                    $('#nodeCount').text(nodesData.length);
+                    $('#activeNodeCount').text(activeNodes);
+                    $('#inactiveNodeCount').text(inactiveNodes);
+                    $('#errorNodeCount').text(errorNodes);
+                    renderNodesList(nodesData);
+                }
+
+                // 加载容器数据
+                const containersResp = await fetch('/api/containers/cache');
+                const containersResult = await containersResp.json();
+                if (containersResult.code === 200) {
+                    const containers = containersResult.data || [];
+                    const runningContainers = containers.filter(c => c.status === 'Running').length;
+                    const stoppedContainers = containers.filter(c => c.status === 'Stopped').length;
+                    const otherContainers = containers.length - runningContainers - stoppedContainers;
+                    
+                    $('#containerCount').text(containers.length);
+                    $('#runningCount').text(runningContainers);
+                    $('#stoppedCount').text(stoppedContainers);
+                    $('#otherCount').text(otherContainers);
+                }
+
+                // 更新时间
+                const now = new Date();
+                $('#lastUpdateTime').text(now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+
+            } catch (error) {
+                console.error('加载数据失败:', error);
+            }
+        }
+
+        function renderNodesList(nodes) {
+            if (nodes.length === 0) {
+                $('#nodesList').html('<p class="text-center py-8 text-gray-500 text-xs">暂无节点</p>');
+                return;
+            }
+
+            // 只显示前5个节点
+            const displayNodes = nodes.slice(0, 5);
+            let html = '<div class="space-y-2">';
+
+                displayNodes.forEach((node, index) => {
+                const statusClass = node.status === 'active' 
+                    ? 'text-green-700 bg-green-100' 
+                    : 'text-gray-600 bg-gray-100';
+                
+                const statusText = node.status === 'active' ? '在线' : '离线';
+                const statusIcon = node.status === 'active' 
+                    ? '<span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>' 
+                    : '';
+
+                html += `
+                    <a href="/nodes/${node.id}" class="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 smooth-transition group">
+                        <div class="flex items-center gap-3 flex-1 min-w-0">
+                            <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
+                                <span class="iconify text-white" data-icon="mdi:server" data-width="16"></span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-semibold text-gray-800 truncate">${node.name}</p>
+                                <p class="text-xs text-gray-600 truncate">${node.address || '未配置'}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 flex-shrink-0">
+                            <span class="px-2 py-0.5 text-xs font-medium ${statusClass} rounded-full flex items-center gap-1">
+                                ${statusIcon}
+                                ${statusText}
+                            </span>
+                            <span class="iconify text-gray-400 group-hover:text-blue-600 smooth-transition" data-icon="mdi:chevron-right" data-width="16"></span>
+                        </div>
+                    </a>
+                `;
+            });
+
+            if (nodes.length > 5) {
+                html += `
+                    <a href="/nodes" class="flex items-center justify-center p-3 border border-gray-200 border-dashed rounded-lg hover:border-blue-300 hover:bg-blue-50 transition text-xs text-gray-600 hover:text-blue-600 font-medium">
+                        查看全部 ${nodes.length} 个节点 →
+                    </a>
+                `;
+            }
+
+            html += '</div>';
+            $('#nodesList').html(html);
+        }
+    </script>
+</body>
+</html>

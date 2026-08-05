@@ -1,0 +1,1336 @@
+basePath: /
+definitions:
+  handlers.LXDServerCheckResponse:
+    properties:
+      code:
+        example: 200
+        type: integer
+      data:
+        additionalProperties: true
+        type: object
+      msg:
+        example: API连接正常
+        type: string
+      trace_id:
+        type: string
+    type: object
+  handlers.LXDServerInfoResponse:
+    properties:
+      code:
+        example: 200
+        type: integer
+      data:
+        additionalProperties: true
+        type: object
+      msg:
+        example: 获取容器信息成功
+        type: string
+      trace_id:
+        type: string
+    type: object
+  handlers.LXDServerStatusResponse:
+    properties:
+      code:
+        example: 200
+        type: integer
+      data:
+        additionalProperties: true
+        type: object
+      msg:
+        example: 获取容器状态成功
+        type: string
+      trace_id:
+        type: string
+    type: object
+  handlers.LXDServerTrafficResponse:
+    properties:
+      code:
+        type: integer
+      data: {}
+      msg:
+        type: string
+      trace_id:
+        type: string
+    type: object
+  models.CreateTokenRequest:
+    properties:
+      expires_in:
+        type: integer
+      hostname:
+        type: string
+      server_ip:
+        type: string
+      service_id:
+        type: integer
+      user_id:
+        type: integer
+    required:
+    - hostname
+    type: object
+  models.IPv6BindingListResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/models.IPv6BindingRule'
+        type: array
+      msg:
+        type: string
+    type: object
+  models.IPv6BindingResponse:
+    properties:
+      code:
+        type: integer
+      data: {}
+      msg:
+        type: string
+    type: object
+  models.IPv6BindingRule:
+    properties:
+      container_ipv6:
+        description: 容器内网IPv6地址
+        type: string
+      container_name:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      interface:
+        description: 绑定的网卡接口
+        type: string
+      public_ipv6:
+        description: 公网IPv6地址
+        type: string
+      status:
+        description: active, inactive, error
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.IPv6BindingStatusData:
+    properties:
+      enabled:
+        type: boolean
+      interface:
+        type: string
+      pool_info:
+        $ref: '#/definitions/models.IPv6PoolStatus'
+    type: object
+  models.IPv6BindingStatusResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/models.IPv6BindingStatusData'
+      msg:
+        type: string
+    type: object
+  models.IPv6PoolStatus:
+    properties:
+      pool_size:
+        type: integer
+      prefix_length:
+        type: integer
+      start:
+        type: string
+    type: object
+  models.LXDServerCreateRequest:
+    properties:
+      allow_nesting:
+        description: 允许嵌套
+        example: false
+        type: boolean
+      cpu_allowance:
+        description: CPU 高级配置
+        example: 50%
+        type: string
+      cpus:
+        example: 2
+        type: integer
+      disk:
+        description: 硬盘(支持单位)
+        example: 512MB
+        type: string
+      disk_io_limit:
+        description: 磁盘IO限制
+        example: 100MB
+        type: string
+      egress:
+        description: 下行带宽(支持单位) - 容器接收数据限制
+        example: 100Mbit
+        type: string
+      enable_lxcfs:
+        description: LXCFS 配置
+        example: true
+        type: boolean
+      hostname:
+        description: 容器主机名（对应容器名）
+        example: test-container
+        type: string
+      image:
+        description: 镜像
+        example: debian/12
+        type: string
+      ingress:
+        description: 上行带宽(支持单位) - 容器发送数据限制
+        example: 100Mbit
+        type: string
+      max_processes:
+        description: 进程和文件限制
+        example: 512
+        type: integer
+      memory:
+        description: 内存(支持单位)
+        example: 256MB
+        type: string
+      memory_swap:
+        description: 内存高级配置
+        example: true
+        type: boolean
+      network_mode:
+        example: mode1
+        type: string
+      password:
+        description: root密码
+        example: password123
+        type: string
+      privileged:
+        description: 是否允许特权模式
+        example: false
+        type: boolean
+      traffic_limit:
+        example: 100
+        type: integer
+    required:
+    - hostname
+    type: object
+  models.LXDServerReinstallRequest:
+    properties:
+      allow_nesting:
+        example: false
+        type: boolean
+      cpu_allowance:
+        description: CPU 高级配置
+        example: 50%
+        type: string
+      cpus:
+        description: 基础配置（重装时重新应用）
+        example: 2
+        type: integer
+      disk:
+        example: 512MB
+        type: string
+      disk_io_limit:
+        description: 磁盘IO限制
+        example: 100MB
+        type: string
+      egress:
+        example: 100Mbit
+        type: string
+      enable_lxcfs:
+        description: LXCFS 配置
+        example: true
+        type: boolean
+      hostname:
+        description: 容器主机名
+        example: test-container
+        type: string
+      ingress:
+        example: 100Mbit
+        type: string
+      max_processes:
+        description: 进程和文件限制
+        example: 512
+        type: integer
+      memory:
+        example: 256MB
+        type: string
+      memory_swap:
+        description: 内存高级配置
+        example: true
+        type: boolean
+      password:
+        description: 新的root密码
+        example: newpassword123
+        type: string
+      privileged:
+        example: false
+        type: boolean
+      system:
+        description: 新的操作系统镜像
+        example: debian/12
+        type: string
+      traffic_limit:
+        example: 100
+        type: integer
+    required:
+    - hostname
+    - system
+    type: object
+  models.LXDServerResetPasswordRequest:
+    properties:
+      hostname:
+        example: test-container
+        type: string
+      password:
+        example: newpassword123
+        type: string
+    required:
+    - hostname
+    - password
+    type: object
+  models.LXDServerResponse:
+    properties:
+      code:
+        type: integer
+      data: {}
+      msg:
+        type: string
+    type: object
+  models.NATListResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/models.NATRule'
+        type: array
+      msg:
+        type: string
+      trace_id:
+        type: string
+    type: object
+  models.NATOperationResponse:
+    properties:
+      code:
+        type: integer
+      msg:
+        type: string
+    type: object
+  models.NATPortCheckData:
+    properties:
+      available:
+        type: boolean
+      reason:
+        type: string
+    type: object
+  models.NATPortCheckResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/models.NATPortCheckData'
+      msg:
+        type: string
+    type: object
+  models.NATRule:
+    properties:
+      container_name:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      external_port:
+        type: integer
+      external_port_end:
+        description: 端口段结束，0表示单端口
+        type: integer
+      id:
+        type: integer
+      internal_port:
+        type: integer
+      internal_port_end:
+        description: 端口段结束，0表示单端口
+        type: integer
+      ip_version:
+        description: ipv4, ipv6, dual
+        type: string
+      nat_method:
+        description: 固定为iptables
+        type: string
+      protocol:
+        description: tcp, udp, both
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.ProxyCheckData:
+    properties:
+      available:
+        type: boolean
+      reason:
+        type: string
+    type: object
+  models.ProxyCheckResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/models.ProxyCheckData'
+      msg:
+        type: string
+    type: object
+  models.ProxyListResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/models.ProxyRule'
+        type: array
+      msg:
+        type: string
+    type: object
+  models.ProxyResponse:
+    properties:
+      code:
+        type: integer
+      data: {}
+      msg:
+        type: string
+    type: object
+  models.ProxyRule:
+    properties:
+      container_name:
+        type: string
+      container_port:
+        description: 容器端口
+        type: integer
+      created_at:
+        type: string
+      description:
+        type: string
+      domain:
+        description: 唯一域名
+        type: string
+      id:
+        type: integer
+      ssl_cert_path:
+        description: 证书文件路径
+        type: string
+      ssl_enabled:
+        description: 是否启用SSL
+        type: boolean
+      ssl_key_path:
+        description: 私钥文件路径
+        type: string
+      ssl_type:
+        description: none, self-signed, custom
+        type: string
+      status:
+        description: active, inactive
+        type: string
+      updated_at:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@example.com
+    name: API支持
+    url: https://github.com/xkatld/zjmf-lxd-server
+  description: 魔方财务系统专用LXD容器管理后端API服务
+  license:
+    name: MIT
+    url: https://github.com/xkatld/zjmf-lxd-server/blob/main/LICENSE
+  termsOfService: https://github.com/xkatld/zjmf-lxd-server
+  title: 魔方财务-LXD对接API
+  version: 1.1.0
+paths:
+  /api/addport:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 为容器创建外部端口到内部端口的映射
+      parameters:
+      - description: 容器名称
+        in: formData
+        name: hostname
+        required: true
+        type: string
+      - description: 外网端口
+        in: formData
+        maximum: 65535
+        minimum: 10000
+        name: dport
+        type: integer
+      - description: 内网端口
+        in: formData
+        maximum: 65535
+        minimum: 1
+        name: sport
+        required: true
+        type: integer
+      - description: 协议
+        enum:
+        - tcp
+        - udp
+        in: formData
+        name: dtype
+        required: true
+        type: string
+      - description: 描述
+        in: formData
+        name: description
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.NATOperationResponse'
+        "401":
+          description: 认证失败
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 添加NAT端口转发
+      tags:
+      - NAT管理
+  /api/boot:
+    get:
+      description: 提交容器开机任务
+      parameters:
+      - description: 容器名称
+        in: query
+        name: hostname
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LXDServerResponse'
+      summary: 启动容器
+      tags:
+      - 容器管理
+  /api/cache/containers:
+    get:
+      description: 从缓存中获取所有容器信息（lxdweb专用接口）
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 获取所有容器缓存
+      tags:
+      - 缓存接口
+  /api/cache/containers/refresh:
+    post:
+      description: 从LXD重新获取所有容器并更新到缓存数据库
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 刷新容器列表缓存
+      tags:
+      - 缓存接口
+  /api/check:
+    get:
+      description: 检查API连接与LXD服务状态
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.LXDServerCheckResponse'
+      summary: API检查
+      tags:
+      - 容器管理
+  /api/console/create-token:
+    post:
+      consumes:
+      - application/json
+      description: 创建用于WebSocket控制台连接的安全令牌
+      parameters:
+      - description: 令牌参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 创建控制台访问令牌
+      tags:
+      - Web控制台
+  /api/console/sessions:
+    get:
+      responses:
+        "200":
+          description: 会话列表
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 获取会话列表
+      tags:
+      - Console
+  /api/console/sessions/{sessionId}:
+    delete:
+      parameters:
+      - description: 会话ID
+        in: path
+        name: sessionId
+        required: true
+        type: string
+      responses:
+        "200":
+          description: 关闭结果
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 关闭会话
+      tags:
+      - Console
+  /api/console/status:
+    get:
+      parameters:
+      - description: 容器名称
+        in: query
+        name: hostname
+        required: true
+        type: string
+      responses:
+        "200":
+          description: 状态信息
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 获取控制台状态
+      tags:
+      - Console
+  /api/console/ws:
+    get:
+      parameters:
+      - description: 容器名称
+        in: query
+        name: hostname
+        required: true
+        type: string
+      responses: {}
+      summary: WebSocket控制台连接
+      tags:
+      - Console
+  /api/console/ws-token:
+    get:
+      parameters:
+      - description: 访问令牌
+        in: query
+        name: token
+        required: true
+        type: string
+      responses: {}
+      summary: 基于令牌的WebSocket控制台
+      tags:
+      - Web控制台
+  /api/create:
+    post:
+      consumes:
+      - application/json
+      description: 通过魔方财务创建 LXD 容器
+      parameters:
+      - description: 创建参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/models.LXDServerCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LXDServerResponse'
+        "401":
+          description: 认证失败
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 创建容器
+      tags:
+      - 容器管理
+  /api/delete:
+    get:
+      description: 提交容器删除任务
+      parameters:
+      - description: 容器名称
+        in: query
+        name: hostname
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LXDServerResponse'
+      summary: 删除容器
+      tags:
+      - 容器管理
+  /api/delport:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 删除容器的NAT端口映射
+      parameters:
+      - description: 容器名称
+        in: formData
+        name: hostname
+        required: true
+        type: string
+      - description: 外网端口
+        in: formData
+        maximum: 65535
+        minimum: 10000
+        name: dport
+        required: true
+        type: integer
+      - description: 内网端口
+        in: formData
+        maximum: 65535
+        minimum: 1
+        name: sport
+        required: true
+        type: integer
+      - description: 协议
+        enum:
+        - tcp
+        - udp
+        in: formData
+        name: dtype
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.NATOperationResponse'
+      summary: 删除NAT端口转发
+      tags:
+      - NAT管理
+  /api/info:
+    get:
+      description: 获取容器基础信息和实时统计
+      parameters:
+      - description: 容器名称
+        in: query
+        name: hostname
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.LXDServerInfoResponse'
+      summary: 查询容器信息
+      tags:
+      - 容器管理
+  /api/ipv6/add:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 为容器添加独立的公网IPv6地址绑定
+      parameters:
+      - description: 容器名称
+        in: formData
+        name: hostname
+        required: true
+        type: string
+      - description: 绑定描述
+        in: formData
+        name: description
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.IPv6BindingResponse'
+      summary: 添加IPv6独立绑定
+      tags:
+      - IPv6绑定
+  /api/ipv6/delete:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 删除容器的独立公网IPv6地址绑定
+      parameters:
+      - description: 容器名称
+        in: formData
+        name: hostname
+        required: true
+        type: string
+      - description: 公网IPv6地址
+        in: formData
+        name: public_ipv6
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.IPv6BindingResponse'
+      summary: 删除IPv6独立绑定
+      tags:
+      - IPv6绑定
+  /api/ipv6/list:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定容器的IPv6绑定列表
+      parameters:
+      - description: 容器名称
+        in: query
+        name: hostname
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.IPv6BindingListResponse'
+      summary: 获取IPv6绑定列表
+      tags:
+      - IPv6绑定
+  /api/ipv6/status:
+    get:
+      consumes:
+      - application/json
+      description: 检查系统IPv6绑定功能状态
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.IPv6BindingStatusResponse'
+      summary: 检查IPv6绑定状态
+      tags:
+      - IPv6绑定
+  /api/list:
+    get:
+      description: 获取所有LXD容器的名称列表（仅返回hostname和status，用于轻量级查询）
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'code: 200, msg: success, data: []string'
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 获取容器名称列表
+      tags:
+      - 容器管理
+  /api/nat/check:
+    get:
+      description: 校验指定端口是否被占用
+      parameters:
+      - description: 容器名称
+        in: query
+        name: hostname
+        type: string
+      - description: 外网端口
+        in: query
+        maximum: 65535
+        minimum: 10000
+        name: port
+        required: true
+        type: integer
+      - description: 协议
+        enum:
+        - tcp
+        - udp
+        in: query
+        name: protocol
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.NATPortCheckResponse'
+        "401":
+          description: 认证失败
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 检查外网端口是否可用
+      tags:
+      - NAT管理
+  /api/nat/list:
+    get:
+      description: 列出所有NAT端口转发规则
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.NATListResponse'
+      summary: 获取所有NAT规则列表
+      tags:
+      - NAT管理
+  /api/natlist:
+    get:
+      description: 列出容器所有NAT端口转发
+      parameters:
+      - description: 容器名称
+        in: query
+        name: hostname
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.NATListResponse'
+      summary: 获取NAT规则列表
+      tags:
+      - NAT管理
+  /api/password:
+    post:
+      consumes:
+      - application/json
+      description: 提交密码重置任务
+      parameters:
+      - description: 密码参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/models.LXDServerResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LXDServerResponse'
+      summary: 重置密码
+      tags:
+      - 容器管理
+  /api/proxy/add:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 为容器添加Nginx反向代理规则
+      parameters:
+      - description: 容器名称
+        in: formData
+        name: hostname
+        required: true
+        type: string
+      - description: 域名
+        in: formData
+        name: domain
+        required: true
+        type: string
+      - default: 80
+        description: 容器端口
+        in: formData
+        name: container_port
+        type: integer
+      - description: 描述
+        in: formData
+        name: description
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ProxyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ProxyResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ProxyResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: 添加反向代理
+      tags:
+      - 反向代理
+  /api/proxy/all:
+    get:
+      description: 获取系统中的所有反向代理规则
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ProxyListResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ProxyResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取所有代理规则
+      tags:
+      - 反向代理
+  /api/proxy/check:
+    get:
+      description: 检查域名是否已被使用
+      parameters:
+      - description: 域名
+        in: query
+        name: domain
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ProxyCheckResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ProxyResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: 检查域名可用性
+      tags:
+      - 反向代理
+  /api/proxy/delete:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 删除容器的反向代理规则
+      parameters:
+      - description: 容器名称
+        in: formData
+        name: hostname
+        required: true
+        type: string
+      - description: 域名
+        in: formData
+        name: domain
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ProxyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ProxyResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ProxyResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ProxyResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: 删除反向代理
+      tags:
+      - 反向代理
+  /api/proxy/list:
+    get:
+      description: 获取指定容器的所有反向代理规则
+      parameters:
+      - description: 容器名
+        in: query
+        name: hostname
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ProxyListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ProxyResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取容器代理列表
+      tags:
+      - 反向代理
+  /api/proxy/regenerate:
+    post:
+      description: 重新生成所有反向代理配置文件（启动时恢复功能）
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ProxyResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ProxyResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: 重新生成配置
+      tags:
+      - 反向代理
+  /api/reboot:
+    get:
+      description: 提交容器重启任务
+      parameters:
+      - description: 容器名称
+        in: query
+        name: hostname
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LXDServerResponse'
+      summary: 重启容器
+      tags:
+      - 容器管理
+  /api/reinstall:
+    post:
+      consumes:
+      - application/json
+      description: 提交容器重装任务
+      parameters:
+      - description: 重装参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/models.LXDServerReinstallRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LXDServerResponse'
+      summary: 重装容器系统
+      tags:
+      - 容器管理
+  /api/status:
+    get:
+      description: 获取容器当前状态
+      parameters:
+      - description: 容器名称
+        in: query
+        name: hostname
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.LXDServerStatusResponse'
+      summary: 查询容器状态
+      tags:
+      - 容器管理
+  /api/stop:
+    get:
+      description: 提交容器关机任务
+      parameters:
+      - description: 容器名称
+        in: query
+        name: hostname
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LXDServerResponse'
+      summary: 关闭容器
+      tags:
+      - 容器管理
+  /api/suspend:
+    get:
+      description: 提交容器暂停任务
+      parameters:
+      - description: 容器名称
+        in: query
+        name: hostname
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LXDServerResponse'
+      summary: 暂停容器
+      tags:
+      - 容器管理
+  /api/traffic:
+    get:
+      description: 获取容器当前的流量统计信息
+      parameters:
+      - description: 容器名称
+        in: query
+        name: hostname
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.LXDServerTrafficResponse'
+      summary: 获取容器流量
+      tags:
+      - 流量管理
+  /api/traffic/reset:
+    post:
+      description: 重置容器流量并重新启动统计
+      parameters:
+      - description: 容器名称
+        in: query
+        name: hostname
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.LXDServerTrafficResponse'
+      summary: 重置流量统计
+      tags:
+      - 流量管理
+  /api/unsuspend:
+    get:
+      description: 提交容器恢复任务
+      parameters:
+      - description: 容器名称
+        in: query
+        name: hostname
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LXDServerResponse'
+      summary: 恢复容器
+      tags:
+      - 容器管理
+  /console:
+    get:
+      parameters:
+      - description: 访问令牌
+        in: query
+        name: token
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses: {}
+      summary: 控制台Web页面
+      tags:
+      - Web控制台
+  /metrics:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 性能指标
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 获取系统指标
+      tags:
+      - System
+securityDefinitions:
+  ApiKeyAuth:
+    description: 在header中添加apikey字段，值为配置文件中的api_hash
+    in: header
+    name: apikey
+    type: apiKey
+swagger: "2.0"

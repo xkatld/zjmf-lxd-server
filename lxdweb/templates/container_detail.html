@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50">
+    {{template "header.html" .}}
+    
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- 面包屑导航 -->
+        <div class="mb-6">
+            <div class="flex items-center text-sm text-gray-600">
+                <a href="/nodes" class="hover:text-blue-600">节点管理</a>
+                <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+                <a href="/nodes/{{ .node_id }}" id="breadcrumbNodeName" class="hover:text-blue-600">节点</a>
+                <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+                <a href="/nodes/{{ .node_id }}/containers" class="hover:text-blue-600">容器列表</a>
+                <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+                <span class="text-gray-900 font-medium">{{ .container_name }}</span>
+            </div>
+        </div>
+
+        <!-- 容器头部：主机名和状态 -->
+        <div class="bg-white rounded-lg border border-gray-200 p-4 mb-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div id="containerIconBg" class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-base font-semibold text-gray-800">{{ .container_name }}</h1>
+                        <p id="containerImage" class="text-xs text-gray-500 mt-0.5">加载中...</p>
+                    </div>
+                </div>
+                <div id="containerStatus">
+                    <span class="px-2 py-0.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-full">加载中...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 容器信息 -->
+        <div id="tabContent">
+            <!-- 信息Tab -->
+            <div id="infoTab" class="tab-pane active">
+                <!-- IP地址信息 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+            <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-md p-3 border border-gray-200">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+                    </svg>
+                    <div class="flex-1">
+                        <p class="text-xs text-gray-600">IPv4地址</p>
+                        <p id="containerIPv4" class="text-sm font-mono font-medium text-gray-800 mt-0.5">-</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-md p-3 border border-gray-200">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+                    </svg>
+                    <div class="flex-1">
+                        <p class="text-xs text-gray-600">IPv6地址</p>
+                        <p id="containerIPv6" class="text-xs font-mono font-medium text-gray-800 break-all mt-0.5">-</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 所有操作 -->
+        <div class="bg-white rounded-lg border border-gray-200 p-4 mb-4">
+            <h2 class="text-base font-semibold text-gray-800 mb-3">容器操作</h2>
+            <div class="flex flex-wrap gap-1.5">
+                <button onclick="startContainer()" class="px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 rounded transition">启动</button>
+                <button onclick="stopContainer()" class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded transition">停止</button>
+                <button onclick="restartContainer()" class="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded transition">重启</button>
+                <button onclick="suspendContainer()" class="px-3 py-1.5 text-xs font-medium text-yellow-700 bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 rounded transition">暂停</button>
+                <button onclick="unsuspendContainer()" class="px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 rounded transition">恢复</button>
+                <button onclick="showResetPasswordModal()" class="px-3 py-1.5 text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded transition">重置密码</button>
+                <button onclick="showReinstallModal()" class="px-3 py-1.5 text-xs font-medium text-orange-700 bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded transition">重装系统</button>
+                <button onclick="resetTraffic()" class="px-3 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded transition">重置流量</button>
+                <button onclick="openConsole()" class="px-3 py-1.5 text-xs font-medium text-cyan-700 bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 rounded transition">控制台</button>
+                <button onclick="deleteContainer()" class="px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded transition">删除容器</button>
+            </div>
+        </div>
+
+        <!-- 资源监控 -->
+        <div class="bg-white rounded-lg border border-gray-200 p-4 mb-4">
+            <h2 class="text-base font-semibold text-gray-800 mb-3">资源监控</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-md p-3 border border-gray-200">
+                    <p class="text-xs text-gray-600">CPU使用</p>
+                    <p id="resCPU" class="text-sm font-medium text-gray-800 mt-0.5">-</p>
+                </div>
+                <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-md p-3 border border-gray-200">
+                    <p class="text-xs text-gray-600">内存</p>
+                    <p id="resMemory" class="text-sm font-medium text-gray-800 mt-0.5">-</p>
+                </div>
+                <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-md p-3 border border-gray-200">
+                    <p class="text-xs text-gray-600">磁盘</p>
+                    <p id="resDisk" class="text-sm font-medium text-gray-800 mt-0.5">-</p>
+                </div>
+                <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-md p-3 border border-gray-200">
+                    <p class="text-xs text-gray-600">流量</p>
+                    <p id="resTraffic" class="text-sm font-medium text-gray-800 mt-0.5">-</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-4 gap-3">
+                <div class="bg-gray-50 rounded-lg p-3">
+                    <h3 class="text-xs font-semibold text-gray-700 mb-2">CPU使用趋势 (%)</h3>
+                    <div style="height: 150px;">
+                        <canvas id="cpuChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-3">
+                    <h3 class="text-xs font-semibold text-gray-700 mb-2">内存使用趋势 (%)</h3>
+                    <div style="height: 150px;">
+                        <canvas id="memoryChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-3">
+                    <h3 class="text-xs font-semibold text-gray-700 mb-2">磁盘使用趋势 (%)</h3>
+                    <div style="height: 150px;">
+                        <canvas id="diskChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-3">
+                    <h3 class="text-xs font-semibold text-gray-700 mb-2">流量使用趋势 (%)</h3>
+                    <div style="height: 150px;">
+                        <canvas id="trafficChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast 通知 -->
+    <div id="toast" class="toast toast-top toast-end" style="display: none;">
+        <div class="alert">
+            <span id="toastMessage"></span>
+        </div>
+    </div>
+
+    <!-- 添加NAT规则模态框 -->
+    <dialog id="addNATModal" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg mb-4">添加NAT端口转发规则</h3>
+            <form id="addNATForm" class="space-y-3">
+                <div class="form-control">
+                    <label class="label"><span class="label-text">协议 *</span></label>
+                    <select id="natProtocol" required class="select select-bordered select-sm" onchange="checkNATPort()">
+                        <option value="tcp">TCP</option>
+                        <option value="udp">UDP</option>
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">外部端口 * <span class="text-xs text-gray-500">(10000-65535)</span></span></label>
+                    <input type="number" id="natExternalPort" required min="10000" max="65535" class="input input-bordered input-sm" placeholder="10000-65535" onblur="checkNATPort()">
+                    <label class="label">
+                        <span id="natPortCheck" class="label-text-alt"></span>
+                    </label>
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">内部端口 * <span class="text-xs text-gray-500">(1-65535)</span></span></label>
+                    <input type="number" id="natInternalPort" required min="1" max="65535" class="input input-bordered input-sm" placeholder="1-65535">
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">描述</span></label>
+                    <input type="text" id="natDescription" class="input input-bordered input-sm" placeholder="端口用途说明">
+                </div>
+                <div class="modal-action">
+                    <button type="button" onclick="closeAddNATModal()" class="btn btn-sm">取消</button>
+                    <button type="submit" class="btn btn-sm btn-primary" id="natSubmitBtn">添加</button>
+                </div>
+            </form>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>关闭</button></form>
+    </dialog>
+
+    <!-- 添加IPv6地址模态框 -->
+    <dialog id="addIPv6Modal" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg mb-4">添加IPv6地址</h3>
+            <form id="addIPv6Form" class="space-y-3">
+                <div class="form-control">
+                    <label class="label"><span class="label-text">描述（可选）</span></label>
+                    <input type="text" id="ipv6Description" class="input input-bordered input-sm" placeholder="用途说明">
+                </div>
+                <div class="modal-action">
+                    <button type="button" onclick="closeAddIPv6Modal()" class="btn btn-sm">取消</button>
+                    <button type="submit" class="btn btn-sm btn-primary">添加</button>
+                </div>
+            </form>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>关闭</button></form>
+    </dialog>
+
+    <!-- 添加反向代理模态框 -->
+    <dialog id="addProxyModal" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg mb-4">添加反向代理</h3>
+            <form id="addProxyForm" class="space-y-3">
+                <div class="form-control">
+                    <label class="label"><span class="label-text">域名 *</span></label>
+                    <input type="text" id="proxyDomain" required class="input input-bordered input-sm" placeholder="example.com">
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">后端端口 *</span></label>
+                    <input type="number" id="proxyBackendPort" required class="input input-bordered input-sm" placeholder="80">
+                </div>
+                <hr class="my-3">
+                <div class="form-control">
+                    <label class="label cursor-pointer">
+                        <span class="label-text font-semibold">启用 HTTPS (SSL/TLS)</span>
+                        <input type="checkbox" id="proxySSLEnabled" class="checkbox checkbox-primary checkbox-sm">
+                    </label>
+                </div>
+                <div id="proxySSLOptions" style="display:none;" class="space-y-3">
+                    <div class="form-control">
+                        <label class="label"><span class="label-text">SSL 证书类型</span></label>
+                        <select id="proxySSLType" class="select select-bordered select-sm">
+                            <option value="self-signed">自动生成自签名证书</option>
+                            <option value="custom">手动填写证书内容</option>
+                        </select>
+                    </div>
+                    <div id="proxyCustomCertFields" style="display:none;" class="space-y-2">
+                        <div class="form-control">
+                            <label class="label"><span class="label-text text-xs">SSL 证书内容 *</span></label>
+                            <textarea id="proxySSLCert" class="textarea textarea-bordered textarea-sm" rows="3" placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----"></textarea>
+                        </div>
+                        <div class="form-control">
+                            <label class="label"><span class="label-text text-xs">SSL 私钥内容 *</span></label>
+                            <textarea id="proxySSLKey" class="textarea textarea-bordered textarea-sm" rows="3" placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-action">
+                    <button type="button" onclick="closeAddProxyModal()" class="btn btn-sm">取消</button>
+                    <button type="submit" class="btn btn-sm btn-primary">添加</button>
+                </div>
+            </form>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>关闭</button></form>
+    </dialog>
+
+    <!-- 重置密码模态框 -->
+    <dialog id="resetPasswordModal" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg mb-4">重置root密码</h3>
+            <form id="resetPasswordForm" class="space-y-3">
+                <div class="form-control">
+                    <label class="label"><span class="label-text">新密码 *</span></label>
+                    <input type="password" id="newPassword" required class="input input-bordered input-sm" placeholder="请输入新密码">
+                </div>
+                <div class="modal-action">
+                    <button type="button" onclick="closeResetPasswordModal()" class="btn btn-sm">取消</button>
+                    <button type="submit" class="btn btn-sm btn-primary">确认重置</button>
+                </div>
+            </form>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>关闭</button></form>
+    </dialog>
+
+    <!-- 重装系统模态框 -->
+    <dialog id="reinstallModal" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg mb-4">重装系统</h3>
+            <form id="reinstallForm" class="space-y-3">
+                <div class="alert alert-warning">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                    <span class="text-sm">重装系统将删除容器所有数据！</span>
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">操作系统镜像 *</span></label>
+                    <input type="text" id="reinstallImage" required class="input input-bordered input-sm" placeholder="ubuntu:22.04">
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">root密码 *</span></label>
+                    <input type="password" id="reinstallPassword" required class="input input-bordered input-sm" placeholder="请输入新密码">
+                </div>
+                <div class="modal-action">
+                    <button type="button" onclick="closeReinstallModal()" class="btn btn-sm">取消</button>
+                    <button type="submit" class="btn btn-sm btn-error">确认重装</button>
+                </div>
+            </form>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>关闭</button></form>
+    </dialog>
+
+    <script>
+        const nodeId = parseInt({{ .node_id }});
+        const containerName = '{{ .container_name }}';
+        let containerData = null;
+        
+        // Chart.js 图表实例
+        let cpuChart = null;
+        let memoryChart = null;
+        let diskChart = null;
+        let trafficChart = null;
+        
+        // 历史数据存储
+        const maxDataPoints = 20;
+        const chartData = {
+            labels: [],
+            cpu: [],
+            memory: [],
+            disk: [],
+            traffic: []
+        };
+
+        $(document).ready(function() {
+            loadContainerInfo();
+
+            $.get(`/api/nodes/${nodeId}`, function(result) {
+                if (result.code === 200) {
+                    $('#breadcrumbNodeName').text(result.data.name);
+                }
+            });
+
+            $('#resetPasswordForm').submit(function(e) {
+                e.preventDefault();
+                submitResetPassword();
+            });
+
+            $('#reinstallForm').submit(function(e) {
+                e.preventDefault();
+                submitReinstall();
+            });
+
+            // 初始化图表
+            initCharts();
+
+            // 启动定时刷新：每10秒刷新一次容器信息
+            setInterval(function() {
+                loadContainerInfo();
+            }, 10000);
+        });
+
+        function initCharts() {
+            const commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            font: { size: 9 },
+                            maxRotation: 0,
+                            autoSkip: true,
+                            maxTicksLimit: 5
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            font: { size: 9 }
+                        }
+                    }
+                }
+            };
+
+            // CPU图表
+            cpuChart = new Chart(document.getElementById('cpuChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: 'CPU使用率 (%)',
+                        data: chartData.cpu,
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        ...commonOptions.scales,
+                        y: { 
+                            ...commonOptions.scales.y, 
+                            min: 0, 
+                            max: 100, 
+                            ticks: { 
+                                ...commonOptions.scales.y.ticks, 
+                                stepSize: 25,
+                                callback: function(value) { return value + '%'; }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 内存图表
+            memoryChart = new Chart(document.getElementById('memoryChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: '内存使用率 (%)',
+                        data: chartData.memory,
+                        borderColor: 'rgb(34, 197, 94)',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        ...commonOptions.scales,
+                        y: { 
+                            ...commonOptions.scales.y, 
+                            min: 0, 
+                            max: 100, 
+                            ticks: { 
+                                ...commonOptions.scales.y.ticks, 
+                                stepSize: 25,
+                                callback: function(value) { return value + '%'; }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 磁盘图表
+            diskChart = new Chart(document.getElementById('diskChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: '磁盘使用率 (%)',
+                        data: chartData.disk,
+                        borderColor: 'rgb(234, 179, 8)',
+                        backgroundColor: 'rgba(234, 179, 8, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        ...commonOptions.scales,
+                        y: { 
+                            ...commonOptions.scales.y, 
+                            min: 0, 
+                            max: 100, 
+                            ticks: { 
+                                ...commonOptions.scales.y.ticks, 
+                                stepSize: 25,
+                                callback: function(value) { return value + '%'; }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 流量图表
+            trafficChart = new Chart(document.getElementById('trafficChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: '流量使用率 (%)',
+                        data: chartData.traffic,
+                        borderColor: 'rgb(168, 85, 247)',
+                        backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        ...commonOptions.scales,
+                        y: { 
+                            ...commonOptions.scales.y, 
+                            min: 0,
+                            max: 100,
+                            ticks: { 
+                                ...commonOptions.scales.y.ticks,
+                                stepSize: 25,
+                                callback: function(value) { return value + '%'; }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function loadContainerInfo() {
+            $.get(`/api/containers/${containerName}?node_id=${nodeId}`, function(result) {
+                if (result.code === 200) {
+                    containerData = result.data;
+                    if (containerData) {
+                        renderContainerInfo(containerData);
+                    } else {
+                        showToast('error', '容器不存在');
+                    }
+                } else {
+                    console.error('获取容器信息失败:', result.msg);
+                }
+            });
+        }
+
+        function renderContainerInfo(c) {
+            // 状态和图标
+            const statusBadge = c.status === 'Running' ? 
+                '<span class="px-2 py-0.5 text-xs font-medium text-green-700 bg-green-100 rounded-full flex items-center gap-1 w-fit"><span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>运行中</span>' : 
+                c.status === 'Stopped' ?
+                '<span class="px-2 py-0.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-full">已停止</span>' :
+                '<span class="px-2 py-0.5 text-xs font-medium text-yellow-700 bg-yellow-100 rounded-full">其他</span>';
+
+            const iconColor = c.status === 'Running' ? 'from-green-500 to-green-600' : 'from-gray-500 to-gray-600';
+            $('#containerIconBg').removeClass().addClass(`w-12 h-12 bg-gradient-to-br ${iconColor} rounded-lg flex items-center justify-center`);
+            
+            $('#containerStatus').html(statusBadge);
+            $('#containerImage').text(c.image || '未知镜像');
+
+            // IP地址
+            $('#containerIPv4').text(c.ipv4 || '-');
+            $('#containerIPv6').text(c.ipv6 || '-');
+
+            // 资源监控 - 修正字段名
+            const cpuUsage = c.cpu_usage || c.cpu_percent || 0;
+            const memoryUsed = c.memory_usage_raw || 0;
+            const memoryTotal = (c.config?.memory || c.memory) ? parseMemorySize(c.config?.memory || c.memory) : 0;
+            const diskUsed = c.disk_usage_raw || 0;
+            const diskTotal = (c.config?.disk || c.disk) ? parseMemorySize(c.config?.disk || c.disk) : 0;
+            const trafficUsed = c.traffic_usage_raw || 0;
+            const trafficLimit = c.config?.traffic_limit || c.traffic_limit || 0;
+
+            $('#resCPU').text(cpuUsage.toFixed(1) + '% / ' + (c.cpus || 1) + '核');
+            $('#resMemory').text(formatBytes(memoryUsed) + ' / ' + formatBytes(memoryTotal));
+            $('#resDisk').text(formatBytes(diskUsed) + ' / ' + formatBytes(diskTotal));
+            
+            // 流量显示：已用 / 限制
+            const trafficLimitBytes = trafficLimit > 0 ? (trafficLimit * 1024 * 1024 * 1024) : 0;
+            if (trafficLimitBytes > 0) {
+                $('#resTraffic').text(formatBytes(trafficUsed) + ' / ' + formatBytes(trafficLimitBytes));
+            } else {
+                $('#resTraffic').text(formatBytes(trafficUsed) + ' / 无限制');
+            }
+
+            // 更新图表数据
+            updateChartData(cpuUsage, memoryUsed, memoryTotal, diskUsed, diskTotal, trafficUsed, trafficLimitBytes);
+        }
+
+        function parseMemorySize(sizeStr) {
+            if (!sizeStr) return 0;
+            const match = String(sizeStr).match(/^(\d+(?:\.\d+)?)\s*(MB|GB|KB|B)?$/i);
+            if (!match) return 0;
+            const value = parseFloat(match[1]);
+            const unit = (match[2] || 'B').toUpperCase();
+            const units = { 'B': 1, 'KB': 1024, 'MB': 1024 * 1024, 'GB': 1024 * 1024 * 1024 };
+            return value * (units[unit] || 1);
+        }
+
+        function updateChartData(cpuUsage, memoryUsed, memoryTotal, diskUsed, diskTotal, trafficUsed, trafficLimit) {
+            const now = new Date().toLocaleTimeString();
+            
+            // 添加新数据点
+            chartData.labels.push(now);
+            chartData.cpu.push(cpuUsage);
+            chartData.memory.push(memoryTotal > 0 ? (memoryUsed / memoryTotal * 100) : 0);
+            chartData.disk.push(diskTotal > 0 ? (diskUsed / diskTotal * 100) : 0);
+            chartData.traffic.push(trafficLimit > 0 ? (trafficUsed / trafficLimit * 100) : 0);
+
+            // 限制数据点数量
+            if (chartData.labels.length > maxDataPoints) {
+                chartData.labels.shift();
+                chartData.cpu.shift();
+                chartData.memory.shift();
+                chartData.disk.shift();
+                chartData.traffic.shift();
+            }
+
+            // 更新图表
+            if (cpuChart) cpuChart.update('none');
+            if (memoryChart) memoryChart.update('none');
+            if (diskChart) diskChart.update('none');
+            if (trafficChart) trafficChart.update('none');
+        }
+
+        // 容器操作函数
+        function openConsole() {
+            // 检查容器状态
+            if (!containerData || containerData.status !== 'Running') {
+                showToast('error', '容器未运行，无法打开控制台');
+                return;
+            }
+
+            // 创建控制台令牌
+            $.ajax({
+                url: '/api/console/create-token',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    hostname: containerName,
+                    node_id: nodeId
+                }),
+                success: function(result) {
+                    if (result.code === 200) {
+                        // 在新窗口打开控制台
+                        window.open(result.data.console_url, '_blank', 'width=1024,height=768');
+                    } else {
+                        showToast('error', result.msg || '打开控制台失败');
+                    }
+                },
+                error: function() {
+                    showToast('error', '创建控制台令牌失败');
+                }
+            });
+        }
+
+        function startContainer() {
+            if (!confirm('确定要启动容器吗？')) return;
+            $.post(`/api/containers/${containerName}/start?node_id=${nodeId}`, function(result) {
+                if (result.code === 200) {
+                    showToast('success', '容器启动成功');
+                    setTimeout(() => loadContainerInfo(), 2000);
+                } else {
+                    showToast('error', result.msg || '操作失败');
+                }
+            });
+        }
+
+        function stopContainer() {
+            if (!confirm('确定要停止容器吗？')) return;
+            $.post(`/api/containers/${containerName}/stop?node_id=${nodeId}`, function(result) {
+                if (result.code === 200) {
+                    showToast('success', '容器停止成功');
+                    setTimeout(() => loadContainerInfo(), 2000);
+                } else {
+                    showToast('error', result.msg || '操作失败');
+                }
+            });
+        }
+
+        function restartContainer() {
+            if (!confirm('确定要重启容器吗？')) return;
+            $.post(`/api/containers/${containerName}/restart?node_id=${nodeId}`, function(result) {
+                if (result.code === 200) {
+                    showToast('success', '容器重启成功');
+                    setTimeout(() => loadContainerInfo(), 2000);
+                } else {
+                    showToast('error', result.msg || '操作失败');
+                }
+            });
+        }
+
+        function suspendContainer() {
+            if (!confirm('确定要暂停容器吗？')) return;
+            $.post(`/api/containers/${containerName}/suspend?node_id=${nodeId}`, function(result) {
+                if (result.code === 200) {
+                    showToast('success', '容器暂停成功');
+                    setTimeout(() => loadContainerInfo(), 2000);
+                } else {
+                    showToast('error', result.msg || '操作失败');
+                }
+            });
+        }
+
+        function unsuspendContainer() {
+            if (!confirm('确定要恢复容器吗？')) return;
+            $.post(`/api/containers/${containerName}/unsuspend?node_id=${nodeId}`, function(result) {
+                if (result.code === 200) {
+                    showToast('success', '容器恢复成功');
+                    setTimeout(() => loadContainerInfo(), 2000);
+                } else {
+                    showToast('error', result.msg || '操作失败');
+                }
+            });
+        }
+
+        function deleteContainer() {
+            const confirmText = prompt('此操作将永久删除容器及其所有数据！\n请输入容器名称确认删除：');
+            if (confirmText !== containerName) {
+                if (confirmText !== null) showToast('error', '容器名称不匹配');
+                return;
+            }
+            $.ajax({
+                url: `/api/containers/${containerName}/delete?node_id=${nodeId}`,
+                type: 'POST',
+                success: function(result) {
+                    if (result.code === 200) {
+                        showToast('success', '容器删除成功');
+                        setTimeout(() => window.location.href = `/nodes/${nodeId}/containers`, 2000);
+                    } else {
+                        showToast('error', result.msg || '删除失败');
+                    }
+                }
+            });
+        }
+
+        function resetTraffic() {
+            if (!confirm('确定要重置流量统计吗？')) return;
+            $.post(`/api/containers/${containerName}/traffic/reset?node_id=${nodeId}`, function(result) {
+                if (result.code === 200) {
+                    showToast('success', '流量重置成功');
+                    setTimeout(() => loadContainerInfo(), 2000);
+                } else {
+                    showToast('error', result.msg || '操作失败');
+                }
+            });
+        }
+
+        function showResetPasswordModal() {
+            document.getElementById('resetPasswordModal').showModal();
+        }
+
+        function closeResetPasswordModal() {
+            document.getElementById('resetPasswordModal').close();
+            $('#resetPasswordForm')[0].reset();
+        }
+
+        function submitResetPassword() {
+            const data = {
+                hostname: containerName,
+                node_id: nodeId,
+                new_password: $('#newPassword').val()
+            };
+
+            $.ajax({
+                url: `/api/containers/${containerName}/password`,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function(result) {
+                    if (result.code === 200) {
+                        showToast('success', '密码重置成功');
+                        closeResetPasswordModal();
+                    } else {
+                        showToast('error', result.msg || '密码重置失败');
+                    }
+                }
+            });
+        }
+
+        function showReinstallModal() {
+            document.getElementById('reinstallModal').showModal();
+        }
+
+        function closeReinstallModal() {
+            document.getElementById('reinstallModal').close();
+            $('#reinstallForm')[0].reset();
+        }
+
+        function submitReinstall() {
+            const data = {
+                hostname: containerName,
+                node_id: nodeId,
+                image: $('#reinstallImage').val(),
+                password: $('#reinstallPassword').val()
+            };
+
+            $.ajax({
+                url: `/api/containers/${containerName}/reinstall`,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function(result) {
+                    if (result.code === 200) {
+                        showToast('success', '系统重装任务已启动');
+                        closeReinstallModal();
+                        setTimeout(() => loadContainerInfo(), 3000);
+                    } else {
+                        showToast('error', result.msg || '重装失败');
+                    }
+                }
+            });
+        }
+
+        function formatBytes(bytes) {
+            if (!bytes || bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
+        }
+
+        function showToast(type, message) {
+            const toast = $('#toast');
+            const alert = toast.find('.alert');
+            
+            alert.removeClass('alert-success alert-error alert-warning alert-info');
+            if (type === 'success') alert.addClass('alert-success');
+            else if (type === 'error') alert.addClass('alert-error');
+            else if (type === 'warning') alert.addClass('alert-warning');
+            else alert.addClass('alert-info');
+            
+            $('#toastMessage').text(message);
+            toast.show();
+            
+            setTimeout(function() {
+                toast.fadeOut();
+            }, 3000);
+        }
+    </script>
+
+    {{template "footer.html" .}}
+</body>
+</html>

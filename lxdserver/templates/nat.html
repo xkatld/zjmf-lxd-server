@@ -1,0 +1,1120 @@
+<style>
+    /* 简洁专业设计风格 */
+    
+    .modern-table {
+        border: 1px solid #e1e5e9;
+        border-radius: 6px;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .modern-table thead {
+        background: #f8f9fa;
+        color: #495057;
+    }
+    
+    .modern-table thead th {
+        border: none;
+        padding: 10px 12px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    .modern-table thead th i {
+        margin-right: 6px;
+        color: #6c757d;
+    }
+    
+    .modern-table tbody tr {
+        border: none;
+        transition: background-color 0.2s ease;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .modern-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .modern-table tbody tr:last-child {
+        border-bottom: none;
+    }
+    
+    .modern-table tbody td {
+        border: none;
+        padding: 10px 12px;
+        vertical-align: middle;
+        font-size: 0.85rem;
+    }
+    
+    /* 端口样式简化 */
+    .port-display {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .port-number {
+        background: #e3f2fd;
+        color: #1976d2;
+        border: 1px solid #bbdefb;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-weight: 600;
+        font-size: 0.8rem;
+        min-width: 60px;
+        text-align: center;
+    }
+    
+    .internal-port {
+        background: #e8f5e8;
+        color: #388e3c;
+        border: 1px solid #c8e6c9;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-weight: 600;
+        font-size: 0.8rem;
+        min-width: 60px;
+        text-align: center;
+    }
+    
+    .port-arrow {
+        color: #6c757d;
+        font-size: 0.9rem;
+        font-weight: bold;
+    }
+    
+    /* 协议标签简化 */
+    .protocol-badge {
+        padding: 4px 12px;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        display: inline-block;
+        min-width: 50px;
+        text-align: center;
+    }
+    
+    .protocol-tcp {
+        background: #e8f5e8;
+        color: #388e3c;
+        border: 1px solid #c8e6c9;
+    }
+    
+    .protocol-udp {
+        background: #f3e5f5;
+        color: #7b1fa2;
+        border: 1px solid #ce93d8;
+    }
+    
+    .protocol-both {
+        background: #e3f2fd;
+        color: #1976d2;
+        border: 1px solid #90caf9;
+    }
+    
+    /* 状态标签简化 */
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 4px;
+        font-weight: 500;
+        font-size: 0.8rem;
+        display: inline-block;
+        min-width: 60px;
+        text-align: center;
+    }
+    
+    .status-active {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .status-inactive {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+    
+    /* 按钮简化 */
+    .action-btn {
+        background: #ffffff;
+        color: #dc3545;
+        border: 1px solid #dc3545;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-weight: 500;
+        font-size: 0.75rem;
+        transition: all 0.2s ease;
+    }
+    
+    .action-btn:hover {
+        background: #dc3545;
+        color: #ffffff;
+    }
+    
+    .btn-create {
+        background: #007bff;
+        border: 1px solid #007bff;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-weight: 500;
+        font-size: 0.75rem;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-create:hover {
+        background: #0056b3;
+        border-color: #0056b3;
+        color: white;
+    }
+    
+    .description-text {
+        background: #f8f9fa;
+        color: #6c757d;
+        padding: 6px 10px;
+        border-radius: 4px;
+        font-style: italic;
+        font-size: 0.85rem;
+        border-left: 3px solid #007bff;
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .badge-modern {
+        background: #6c757d;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: 500;
+        font-size: 0.8rem;
+    }
+    
+    .badge-success-modern {
+        background: #28a745;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: 500;
+        font-size: 0.8rem;
+    }
+    
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+        .modern-table thead th,
+        .modern-table tbody td {
+            padding: 8px 6px;
+            font-size: 0.75rem;
+        }
+        
+        .port-number,
+        .internal-port {
+            font-size: 0.7rem;
+            padding: 3px 6px;
+            min-width: 45px;
+        }
+        
+        .protocol-badge {
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            min-width: 35px;
+        }
+        
+        .action-btn {
+            font-size: 0.7rem;
+            padding: 4px 6px;
+        }
+        
+        .description-text {
+            max-width: 100px;
+            font-size: 0.75rem;
+        }
+        
+        .status-badge {
+            font-size: 0.65rem;
+            padding: 2px 6px;
+        }
+        
+        .port-display {
+            flex-direction: column;
+            gap: 3px;
+        }
+    }
+    </style>
+    
+    <div class="container-fluid" id="natManager">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-network-wired mr-2"></i>NAT 端口转发管理
+                        </h6>
+                        <small class="text-muted">配置容器端口转发规则，实现外网到内网的端口映射访问</small>
+                        <div class="mt-2">
+                            <span class="badge badge-secondary ml-2">
+                                已使用: <span id="current-count">{$current_count}</span>/{$nat_limit} 条
+                            </span>
+                            <span class="badge badge-success ml-1">
+                                可用: <span id="remaining-count">{$remaining_count}</span> 条
+                            </span>
+                        </div>
+                    </div>
+                    <div class="d-flex">
+                        <button class="btn btn-create btn-sm mr-2" data-toggle="modal" data-target="#addModallxdserveracl" id="add-nat-btn">
+                            <i class="fas fa-plus mr-1"></i>创建转发
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="refreshNATPage()">
+                            <i class="fas fa-sync-alt mr-1"></i>刷新
+                        </button>
+                    </div>
+                </div>
+            </div>
+    
+            <div class="card-body">
+                <div id="nat-empty-state" class="text-center py-5" style="display:none">
+                    <div class="empty-state-content">
+                        <i class="fas fa-network-wired fa-4x text-muted mb-4" style="opacity:0.3"></i>
+                        <h4 class="text-muted mb-3">暂无转发规则</h4>
+                        <p class="text-muted mb-4">您还没有创建任何NAT端口转发规则</p>
+                        <button class="btn btn-create btn-lg" data-toggle="modal" data-target="#addModallxdserveracl" style="border-radius: 17px; padding: 6px 20px;">
+                            <i class="fas fa-plus mr-2"></i>创建第一个转发规则
+                        </button>
+                    </div>
+                </div>
+    
+    
+                <div id="nat-list-container" style="display:block">
+                    <div class="table-responsive">
+                        <table class="table modern-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width:25%">
+                                        <i class="fas fa-exchange-alt"></i>端口映射
+                                    </th>
+                                    <th style="width:15%">
+                                        <i class="fas fa-network-wired"></i>协议
+                                    </th>
+                                    <th style="width:35%">
+                                        <i class="fas fa-comment-alt"></i>备注信息
+                                    </th>
+                                    <th style="width:15%">
+                                        <i class="fas fa-chart-line"></i>状态
+                                    </th>
+                                    <th style="width:10%">
+                                        <i class="fas fa-cogs"></i>操作
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="nat-tbody">
+                                <tr class="loading-row">
+                                    <td colspan="5" class="text-center py-4">
+                                        <i class="fas fa-spinner fa-spin mr-2"></i>加载中...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <div class="modal fade" id="addModallxdserveracl" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-plus-circle text-primary mr-2"></i>创建 NAT 转发规则
+                        </h5>
+                        <button type="button" class="close" data-dismiss="modal" onclick="closeAddModal()">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-success mb-3">
+                            <i class="fas fa-info-circle mr-1"></i><strong>功能说明:</strong> 配置端口转发规则，通过外网端口访问容器内部服务
+                        </div>
+                        
+                        <form id="addNatForm">
+                            <div class="form-group">
+                                <label for="sportinput">
+                                    <i class="fas fa-server mr-1"></i>内网起始端口
+                                </label>
+                                <input required name="sport" type="number" class="form-control" min="1" max="65535"
+                                       id="sportinput" placeholder="请输入内部起始端口(1-65535)">
+                                <div class="invalid-feedback" id="internalPort-feedbacklxdserveracl"></div>
+                                <small class="form-text text-muted">容器内部服务监听的起始端口</small>
+                            </div>
+    
+                            <div class="form-group">
+                                <label for="dportinput">
+                                    <i class="fas fa-globe mr-1"></i>外网起始端口
+                                </label>
+                                <div class="input-group">
+                                    <input name="dport" type="number" class="form-control" min="10000" max="65535"
+                                           id="dportinput" placeholder="留空自动分配 (10000-65535)">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button" id="check-dport-btn">
+                                            <i class="fas fa-search mr-1"></i>检测
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="invalid-feedback" id="externalPort-feedback"></div>
+                                <small class="form-text text-muted">可自定义外网端口范围 10000-65535，不填写则由系统随机分配。</small>
+                                <div class="mt-1 small" id="externalPort-status" style="display:none;"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="port_count">
+                                    <i class="fas fa-sort-numeric-up mr-1"></i>端口数量
+                                </label>
+                                <input name="port_count" type="number" class="form-control" min="1" max="50" value="1"
+                                       id="port_count" placeholder="默认1个端口">
+                                <small class="form-text text-muted">
+                                    填写1或留空表示单端口；填写大于1的数字表示端口段（例如：10表示映射10个连续端口）
+                                </small>
+                            </div>
+    
+                            <div class="form-group">
+                                <label for="protocolSelect">
+                                    <i class="fas fa-network-wired mr-1"></i>协议类型
+                                </label>
+                                {if $udp_enabled}
+                                <input type="text" class="form-control" value="TCP/UDP" disabled>
+                                <input name="dtype" type="hidden" value="both">
+                                <small class="form-text text-muted">TCP适用于HTTP/HTTPS/SSH等，UDP适用于DNS/游戏等服务</small>
+                                {else}
+                                <input type="text" class="form-control" value="TCP" disabled>
+                                <input name="dtype" type="hidden" value="tcp">
+                                <small class="form-text text-muted">适用于HTTP/HTTPS/SSH等常见服务</small>
+                                {/if}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="description">
+                                    <i class="fas fa-comment mr-1"></i>备注信息 (可选)
+                                </label>
+                                <input name="description" type="text" class="form-control" id="description" 
+                                       placeholder="请输入该转发规则的备注信息">
+                                <small class="form-text text-muted">为该NAT转发规则添加备注，方便管理和识别</small>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm mr-2" data-dismiss="modal" onclick="closeAddModal()">
+                            <i class="fas fa-times mr-1"></i>取消
+                        </button>
+                        <button type="button" class="btn btn-primary btn-sm confirm-btnlxdserveracl">
+                            <i class="fas fa-check mr-1"></i>确认创建
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <div class="card shadow mt-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-question-circle mr-2"></i>使用说明
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-server text-primary mr-2"></i><strong>内网端口:</strong> 容器内部服务起始端口</li>
+                            <li class="mb-2"><i class="fas fa-globe text-success mr-2"></i><strong>外网端口:</strong> 外部访问起始端口</li>
+                            <li class="mb-2"><i class="fas fa-sort-numeric-up text-info mr-2"></i><strong>端口数量:</strong> 填1为单端口，大于1为端口段</li>
+                            <li class="mb-2"><i class="fas fa-network-wired text-info mr-2"></i><strong>协议类型:</strong> {if $udp_enabled}TCP/UDP 协议{else}TCP 协议{/if}</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-link text-warning mr-2"></i>通过 <code>服务器IP:外网端口</code> 访问服务</li>
+                            <li class="mb-2"><i class="fas fa-exclamation-circle text-warning mr-2"></i>端口段会按实际端口数量占用配额</li>
+                            <li class="mb-2"><i class="fas fa-trash text-danger mr-2"></i>删除规则将立即停止端口转发</li>
+                            <li class="mb-2"><i class="fas fa-broom text-secondary mr-2"></i>建议定期清理不需要的规则</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+
+<script>
+    var currentContainerId = '';
+    var MODULE_API_URL = "{$MODULE_CUSTOM_API}";
+    var currentContainerName = '';
+    var natLimit = {$nat_limit};
+    var currentCount = {$current_count};
+    {if $udp_enabled}
+    var udpEnabled = true;
+    {else}
+    var udpEnabled = false;
+    {/if}
+    
+    var portCheckLock = false;
+    var lastPortCheckValue = '';
+    
+    $(document).ready(function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const containerId = urlParams.get('id');
+    
+        if (!containerId) {
+            console.error('无法从 URL 获取容器 ID');
+            return;
+        }
+    
+        currentContainerId = containerId;
+        getContainerInfo(containerId);
+        fetchNATList();
+        setInterval(fetchNATList, 30000);
+    
+        $('#check-dport-btn').on('click', function () {
+            triggerPortCheck();
+        });
+    
+        $('#dportinput').on('input', function () {
+            clearExternalPortFeedback();
+        });
+    
+        $('#addModallxdserveracl').on('hidden.bs.modal', function () {
+            clearExternalPortFeedback();
+            lastPortCheckValue = '';
+        });
+    });
+    
+    function refreshNATRules() {
+        fetchNATList();
+    }
+    
+    window.refreshNATRules = refreshNATRules;
+    window.refreshNATPage = refreshNATRules;
+    function getContainerInfo(containerId) {
+        if (!containerId) return;
+        const timestamp = new Date().getTime();
+        const infoUrl = `/provision/custom/content?id=${containerId}&key=info&action=getinfoall&_t=${timestamp}`;
+    
+        ajax({
+            type: "get",
+            url: infoUrl,
+            success: function(response) {
+                if (response && response.code === 200 && response.data && response.data.hostname) {
+                    currentContainerName = response.data.hostname;
+                }
+            },
+            error: function(status, error) {
+                console.log('获取容器信息失败', status);
+            }
+        });
+    }
+    
+    function fetchNATList() {
+        if (!currentContainerId) return;
+        const timestamp = new Date().getTime();
+        const natlistUrl = `/provision/custom/content?id=${currentContainerId}&key=nat_acl&action=natlist&_t=${timestamp}`;
+    
+        $.ajax({
+            url: natlistUrl,
+            method: 'GET',
+            dataType: 'json',
+            timeout: 10000,
+            cache: false,
+            success: function(resp) {
+                const $empty = $('#nat-empty-state');
+                const $listContainer = $('#nat-list-container');
+                const $tbody = $('#nat-tbody');
+    
+            if (resp && resp.data && resp.data.list && Array.isArray(resp.data.list)) {
+                const list = resp.data.list;
+
+                if (list.length === 0) {
+                    $empty.show();
+                    $listContainer.hide();
+                    updateNATCounters(0);
+                } else {
+                    $empty.hide();
+                    $listContainer.show();
+
+                    // 合并同一端口的TCP和UDP规则
+                    const merged = {};
+                    list.forEach(function(item) {
+                        const dport = item.external_port || item.dport || '';
+                        const sport = item.internal_port || item.sport || '';
+                        const dportEnd = item.external_port_end || item.dport_end || 0;
+                        const sportEnd = item.internal_port_end || item.sport_end || 0;
+                        const dtype = (item.protocol || item.dtype || '').toLowerCase().replace(/\s+/g, '');
+                        const key = dport + '_' + sport + '_' + dportEnd + '_' + sportEnd;
+                        
+                        if (!merged[key]) {
+                            merged[key] = {
+                                dport: dport,
+                                sport: sport,
+                                dportEnd: dportEnd,
+                                sportEnd: sportEnd,
+                                protocols: [],
+                                status: item.status || 'active',
+                                description: item.description || ''
+                            };
+                        }
+                        merged[key].protocols.push(dtype);
+                    });
+
+                    let html = '';
+                    Object.values(merged).forEach(function(item) {
+                        const dport = item.dport;
+                        const sport = item.sport;
+                        const dportEnd = item.dportEnd || 0;
+                        const sportEnd = item.sportEnd || 0;
+                        const protocols = item.protocols;
+                        const status = (item.status || 'active').toLowerCase();
+                        const description = item.description || '';
+                        
+                        const isPortRange = dportEnd > 0 && sportEnd > 0;
+                        
+                        // 判断协议类型：如果同时有tcp和udp，显示为both
+                        let dtype = 'tcp';
+                        if (protocols.includes('tcp') && protocols.includes('udp')) {
+                            dtype = 'both';
+                        } else if (protocols.includes('udp')) {
+                            dtype = 'udp';
+                        } else if (protocols.includes('both')) {
+                            dtype = 'both';
+                        }
+    
+                            let portMapping;
+                            if (isPortRange) {
+                                portMapping = '<div class="port-display">' +
+                                                    '<span class="port-number">' + dport + '-' + dportEnd + '</span>' +
+                                                    '<span class="port-arrow">→</span>' +
+                                                    '<span class="internal-port">' + sport + '-' + sportEnd + '</span>' +
+                                                    '</div>';
+                            } else {
+                                portMapping = '<div class="port-display">' +
+                                                    '<span class="port-number">' + dport + '</span>' +
+                                                    '<span class="port-arrow">→</span>' +
+                                                    '<span class="internal-port">' + sport + '</span>' +
+                                                    '</div>';
+                            }
+    
+                            let protocolBadge;
+                            if (dtype === 'tcp') {
+                                protocolBadge = '<span class="protocol-badge protocol-tcp"><i class="fas fa-shield-alt mr-1"></i>TCP</span>';
+                            } else if (dtype === 'udp') {
+                                protocolBadge = '<span class="protocol-badge protocol-udp"><i class="fas fa-broadcast-tower mr-1"></i>UDP</span>';
+                            } else if (dtype === 'both') {
+                                protocolBadge = '<span class="protocol-badge protocol-both"><i class="fas fa-network-wired mr-1"></i>TCP+UDP</span>';
+                            } else {
+                                protocolBadge = '<span class="protocol-badge protocol-other">' + (dtype || 'TCP').toUpperCase() + '</span>';
+                            }
+    
+                            let descriptionDisplay = '';
+                            if (description && description.trim() !== '') {
+                                descriptionDisplay = '<div class="description-text" title="' + description + '">' + description + '</div>';
+                            } else {
+                                descriptionDisplay = '<div class="description-text text-muted">-</div>';
+                            }
+    
+                            let statusBadge;
+                            if (status === 'active') {
+                                statusBadge = '<span class="status-badge status-active"><i class="fas fa-check-circle mr-1"></i>正常</span>';
+                            } else {
+                                statusBadge = '<span class="status-badge status-inactive"><i class="fas fa-exclamation-triangle mr-1"></i>异常</span>';
+                            }
+    
+                            let deleteBtn = '<button class="btn action-btn deleteNATlxdserveracl" ' +
+                                             'data-dport="' + dport + '" ' +
+                                             'data-sport="' + sport + '" ' +
+                                             'data-dtype="' + dtype + '"';
+                            if (isPortRange) {
+                                deleteBtn += ' data-dport-end="' + dportEnd + '" data-sport-end="' + sportEnd + '"';
+                            }
+                            deleteBtn += ' title="删除该转发规则"><i class="fas fa-trash-alt"></i></button>';
+                            
+                            html += '<tr>' +
+                                    '<td>' + portMapping + '</td>' +
+                                    '<td>' + protocolBadge + '</td>' +
+                                    '<td>' + descriptionDisplay + '</td>' +
+                                    '<td>' + statusBadge + '</td>' +
+                                    '<td>' + deleteBtn + '</td>' +
+                                    '</tr>';
+                    });
+
+                    $tbody.html(html);
+                    
+                    let totalPortCount = 0;
+                    Object.values(merged).forEach(function(item) {
+                        const dportEnd = item.dportEnd || 0;
+                        const sportEnd = item.sportEnd || 0;
+                        if (dportEnd > 0 && sportEnd > 0) {
+                            totalPortCount += (dportEnd - item.dport + 1);
+                        } else {
+                            totalPortCount += 1;
+                        }
+                    });
+                    
+                    updateNATCounters(totalPortCount);
+                }
+            } else {
+                $listContainer.hide();
+                $empty.show();
+                updateNATCounters(0);
+            }
+            },
+            error: function(xhr, status, error) {
+                console.error('NAT列表获取失败:', error);
+                const $empty = $('#nat-empty-state');
+                const $listContainer = $('#nat-list-container');
+                $listContainer.hide();
+                $empty.show();
+                updateNATCounters(0);
+            }
+        });
+    }
+    
+    function updateNATCounters(count) {
+        currentCount = count;
+        const remainingCount = Math.max(0, natLimit - count);
+    
+        $('#current-count').text(count);
+        $('#remaining-count').text(remainingCount);
+    
+        const $addBtn = $('#add-nat-btn');
+        if (count >= natLimit) {
+            $addBtn.prop('disabled', true);
+            $addBtn.html('<i class="fas fa-ban mr-1"></i>已达限制');
+            $addBtn.removeClass('btn-create').addClass('btn-secondary btn-sm');
+            $addBtn.attr('title', `NAT规则数量已达到限制（${natLimit}条）`);
+        } else {
+            $addBtn.prop('disabled', false);
+            $addBtn.html('<i class="fas fa-plus mr-1"></i>创建转发');
+            $addBtn.removeClass('btn-secondary').addClass('btn-create btn-sm');
+            $addBtn.attr('title', '');
+        }
+    }
+    
+    function closeAddModal() {
+        setTimeout(function() {
+            const dportInput = document.getElementById("dportinput");
+            const sportInput = document.getElementById("sportinput");
+            const intFeedback = document.getElementById("internalPort-feedbacklxdserveracl");
+            const formEl = document.getElementById('addNatForm');
+    
+            if (dportInput) dportInput.classList.remove("is-valid", "is-invalid");
+            if (sportInput) sportInput.classList.remove("is-valid", "is-invalid");
+            if (intFeedback) intFeedback.innerHTML = "";
+            if (formEl) formEl.reset();
+            clearExternalPortFeedback();
+        }, 150);
+    }
+    
+    $(document).on('click', '.deleteNATlxdserveracl', function (e) {
+        e.preventDefault();
+        if ($(this).data('disabled') == 'true') return;
+    
+        const delete_nat_btn = $(this);
+        const dport = delete_nat_btn.data('dport');
+        const sport = delete_nat_btn.data('sport');
+        const dtype = delete_nat_btn.data('dtype');
+        const dportEnd = delete_nat_btn.data('dport-end') || 0;
+        const sportEnd = delete_nat_btn.data('sport-end') || 0;
+        
+        const isPortRange = dportEnd > 0 && sportEnd > 0;
+        
+        let portInfoHtml;
+        if (isPortRange) {
+            portInfoHtml = '<div class="text-muted">外网端口: <span class="badge badge-primary">' + dport + '-' + dportEnd + '</span> · 内网端口: <span class="font-weight-bold">' + sport + '-' + sportEnd + '</span> · 协议: <span class="text-uppercase font-weight-bold">' + dtype + '</span></div>';
+        } else {
+            portInfoHtml = '<div class="text-muted">外网端口: <span class="badge badge-primary">' + dport + '</span> · 内网端口: <span class="font-weight-bold">' + sport + '</span> · 协议: <span class="text-uppercase font-weight-bold">' + dtype + '</span></div>';
+        }
+    
+        Swal.fire({
+            type: 'warning',
+            title: '删除转发规则',
+            html: portInfoHtml,
+            showCancelButton: true,
+            reverseButtons: true,
+            buttonsStyling: false,
+            customClass: {
+                popup: 'swal2-bootstrap-card',
+                confirmButton: 'btn btn-danger',
+                cancelButton: 'btn btn-secondary mr-3'
+            },
+            confirmButtonText: '确认删除',
+            cancelButtonText: '取消'
+        }).then((result) => {
+            if (result.value) {
+                delete_nat_btn.data('orig-html', delete_nat_btn.html());
+                delete_nat_btn.html('<i class="fas fa-circle-notch fa-spin"></i>');
+                delete_nat_btn.data('disabled', 'true');
+    
+                let deleteData = { func: 'natdel', dtype: dtype, dport: dport, sport: sport };
+                if (isPortRange) {
+                    deleteData.sport_end = sportEnd;
+                    deleteData.dport_end = dportEnd;
+                }
+                
+                ajax({
+                    type: 'post',
+                    url: MODULE_API_URL,
+                    data: deleteData,
+                    success: function (data) {
+                        delete_nat_btn.html(delete_nat_btn.data('orig-html') || '删除');
+                        delete_nat_btn.data('disabled', 'false');
+                        fetchNATList();
+                    },
+                    error: function (xhrStatus, errorData) {
+                        delete_nat_btn.html(delete_nat_btn.data('orig-html') || '删除');
+                        delete_nat_btn.data('disabled', 'false');
+                        fetchNATList();
+                    }
+                });
+            }
+        });
+    });
+    
+    $('.confirm-btnlxdserveracl').on('click', function () {
+        if (!window.currentContainerName) {
+            Swal.fire({
+                type: 'error',
+                title: '容器信息未加载',
+                text: '请等待容器信息加载完成后再试'
+            });
+            return;
+        }
+    
+        if (currentCount >= natLimit) {
+            Swal.fire({
+                type: 'warning',
+                title: 'NAT规则数量已达限制',
+                text: `您的容器最多只能创建 ${natLimit} 条NAT转发规则`,
+                confirmButtonText: '我知道了'
+            });
+            return;
+        }
+    
+        const internalPort = document.getElementById('sportinput');
+        const internalPortFeedback = document.getElementById('internalPort-feedbacklxdserveracl');
+        const externalPort = document.getElementById('dportinput');
+        const externalFeedback = document.getElementById('externalPort-feedback');
+        const statusEl = document.getElementById('externalPort-status');
+    
+        const sportVal = parseInt(internalPort && internalPort.value ? internalPort.value : '');
+        if (!sportVal || sportVal < 1 || sportVal > 65535) {
+            if (internalPortFeedback) internalPortFeedback.innerHTML = '请填写有效的内网起始端口 (1-65535)';
+            if (internalPort) internalPort.classList.add('is-invalid');
+            return;
+        } else {
+            if (internalPort) internalPort.classList.remove('is-invalid');
+            if (internalPortFeedback) internalPortFeedback.innerHTML = '';
+        }
+        
+        const portCountInput = document.getElementById('port_count');
+        let portCount = parseInt(portCountInput && portCountInput.value ? portCountInput.value : '1');
+        if (!portCount || portCount < 1) {
+            portCount = 1;
+        }
+        if (portCount > 50) {
+            Swal.fire({
+                type: 'error',
+                title: '端口数量超限',
+                text: '端口数量不能超过50个'
+            });
+            return;
+        }
+        
+        if (currentCount + portCount > natLimit) {
+            Swal.fire({
+                type: 'warning',
+                title: 'NAT规则配额不足',
+                text: '当前配额：' + currentCount + '/' + natLimit + '，添加' + portCount + '个端口将超出限制',
+                confirmButtonText: '我知道了'
+            });
+            return;
+        }
+        
+        if (sportVal + portCount - 1 > 65535) {
+            Swal.fire({
+                type: 'error',
+                title: '内网端口范围超限',
+                text: '起始端口' + sportVal + '加上数量' + portCount + '会超过65535'
+            });
+            return;
+        }
+        
+        const dportValRaw = externalPort ? externalPort.value.trim() : '';
+        let dportVal = 0;
+        if (dportValRaw !== '') {
+            dportVal = parseInt(dportValRaw, 10);
+            if (isNaN(dportVal) || dportVal < 10000 || dportVal > 65535) {
+                showPortInvalid('请填写 10000-65535 范围内的有效外网起始端口');
+                return;
+            }
+            
+            if (dportVal + portCount - 1 > 65535) {
+                Swal.fire({
+                    type: 'error',
+                    title: '外网端口范围超限',
+                    text: '起始端口' + dportVal + '加上数量' + portCount + '会超过65535'
+                });
+                return;
+            }
+            
+            if (!portCheckLock && lastPortCheckValue === dportValRaw) {
+                if (externalPort && !externalPort.classList.contains('is-valid')) {
+                    showPortInvalid('请重新检测端口是否可用');
+                    return;
+                }
+            } else if (!portCheckLock && lastPortCheckValue !== dportValRaw) {
+                showPortInvalid('请点击检测按钮确认端口可用性');
+                return;
+            }
+        }
+    
+        if (!$(this).data('submit')) {
+            var current_button = $(this);
+            current_button.data('orig-html', current_button.html());
+            current_button.html('<i class="fas fa-circle-notch fa-spin"></i>');
+            current_button.data('submit', 'submit');
+    
+            let formData = $('#addModallxdserveracl').find('form').serialize();
+            
+            if (portCount > 1) {
+                const sportEnd = sportVal + portCount - 1;
+                const dportEnd = dportVal > 0 ? (dportVal + portCount - 1) : 0;
+                formData += '&sport_end=' + sportEnd;
+                if (dportEnd > 0) {
+                    formData += '&dport_end=' + dportEnd;
+                }
+            }
+            
+            ajax({
+                type: 'post',
+                url: MODULE_API_URL,
+                data: formData + '&func=natadd',
+                success: function (data) {
+                    current_button.html(current_button.data('orig-html') || '确认');
+                    current_button.data('submit', '');
+    
+                    if (!data || typeof data !== 'object') {
+                        Swal.fire({
+                            type: 'error',
+                            title: '创建失败',
+                            text: '服务器响应格式异常'
+                        });
+                        return;
+                    }
+    
+                    const isSuccess = data.status === 200 || data.status === '200' ||
+                                    data.code === 200 || data.code === '200' ||
+                                    data.status === 'success';
+    
+                    if (isSuccess) {
+                        Swal.fire({
+                            type: 'success',
+                            title: '创建成功',
+                            text: data.msg || data.message || 'NAT规则添加成功',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+    
+                        $('#addModallxdserveracl').modal('hide');
+                        closeAddModal();
+                        setTimeout(function() {
+                            fetchNATList();
+                        }, 100);
+                    } else {
+                        Swal.fire({
+                            type: 'error',
+                            title: '创建失败',
+                            text: data.msg || data.message || '操作失败'
+                        });
+                    }
+                },
+                error: function (xhrStatus, errorData) {
+                    current_button.html(current_button.data('orig-html') || '确认');
+                    current_button.data('submit', '');
+    
+                    Swal.fire({
+                        type: 'error',
+                        title: '创建失败',
+                        text: '网络或服务器错误'
+                    });
+                }
+            });
+        }
+    });
+    
+    function ajax(options) {
+        var xhr = new XMLHttpRequest() || new ActiveXObject("Microsoft,XMLHTTP");
+        var str = "";
+    
+        var originalData = options.data;
+    
+        if (typeof options.data != 'string') {
+            for (var key in options.data) {
+                str += "&" + encodeURIComponent(key) + "=" + encodeURIComponent(options.data[key]);
+            }
+            str = str.slice(1);
+        } else {
+            str = options.data;
+        }
+    
+        var method = options.type ? options.type.toUpperCase() : "GET";
+        var url = options.url;
+    
+    
+        if (method === "GET") {
+            xhr.open("get", url + "?" + str);
+            xhr.setRequestHeader("Authorization", "JWT {$Think.get.jwt}");
+            xhr.send();
+        } else if (method === "POST") {
+            xhr.open("post", url);
+            xhr.setRequestHeader("content-type", "application/x-www-form-urlencoded");
+            xhr.setRequestHeader("Authorization", "JWT {$Think.get.jwt}");
+            xhr.send(str);
+        }
+    
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                try {
+                    var d = JSON.parse(xhr.responseText);
+                    options.success && options.success(d, xhr.responseXML);
+                } catch (e) {
+                    options.error && options.error(xhr.status, 'JSON解析错误');
+                }
+            } else if (xhr.readyState == 4 && xhr.status != 200) {
+                try {
+                    var parsedErrorData = JSON.parse(xhr.responseText);
+                    options.error && options.error(xhr.status, parsedErrorData);
+                } catch (e) {
+                    options.error && options.error(xhr.status, xhr.responseText);
+                }
+            }
+        };
+    }
+    
+    function clearExternalPortFeedback() {
+        const dportInput = document.getElementById('dportinput');
+        const externalFeedback = document.getElementById('externalPort-feedback');
+        const statusEl = document.getElementById('externalPort-status');
+        if (dportInput) {
+            dportInput.classList.remove('is-invalid', 'is-valid');
+        }
+        if (externalFeedback) {
+            externalFeedback.innerHTML = '';
+        }
+        if (statusEl) {
+            statusEl.style.display = 'none';
+            statusEl.innerHTML = '';
+            statusEl.className = 'mt-1 small';
+        }
+    }
+    
+    function triggerPortCheck() {
+        const dportInput = document.getElementById('dportinput');
+        if (!dportInput) return;
+        const rawValue = dportInput.value.trim();
+        if (rawValue === '') {
+            clearExternalPortFeedback();
+            Swal.fire({
+                type: 'info',
+                title: '自动分配提示',
+                text: '外网端口留空时系统会自动分配可用端口',
+                timer: 2500,
+                showConfirmButton: false
+            });
+            return;
+        }
+    
+        const port = parseInt(rawValue, 10);
+        if (isNaN(port) || port < 10000 || port > 65535) {
+            showPortInvalid('端口范围须在 10000-65535');
+            return;
+        }
+    
+        if (portCheckLock && rawValue === lastPortCheckValue) {
+            return;
+        }
+    
+        portCheckLock = true;
+        lastPortCheckValue = rawValue;
+    
+        const statusEl = document.getElementById('externalPort-status');
+        if (statusEl) {
+            statusEl.style.display = 'block';
+            statusEl.className = 'mt-1 small text-muted';
+            statusEl.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>正在检测端口占用...';
+        }
+    
+        const protocol = udpEnabled ? (document.querySelector("select[name='dtype']")?.value || 'tcp') : 'tcp';
+        
+        const timestamp = new Date().getTime();
+        const natCheckUrl = `/provision/custom/content?id=${currentContainerId}&key=nat_acl&action=natcheck&dport=${port}&dtype=${protocol}&hostname=${encodeURIComponent(currentContainerName)}&_t=${timestamp}&_=${timestamp - 1000}`;
+    
+        $.ajax({
+            url: natCheckUrl,
+            method: 'GET',
+            dataType: 'json',
+            timeout: 10000,
+            cache: false,
+            success: function(res) {
+                portCheckLock = false;
+                if (res && (res.code === 200 || res.status === 'success') && res.data && res.data.available) {
+                    showPortAvailable();
+                } else {
+                    const reason = res?.data?.reason || res?.msg || '端口不可用';
+                    showPortInvalid(reason);
+                }
+            },
+            error: function(xhr, status, error) {
+                portCheckLock = false;
+                console.error('端口检测请求失败:', status, error);
+                showPortInvalid('端口检测失败，请稍后重试');
+            }
+        });
+    }
+    
+    function showPortInvalid(message) {
+        const dportInput = document.getElementById('dportinput');
+        const externalFeedback = document.getElementById('externalPort-feedback');
+        const statusEl = document.getElementById('externalPort-status');
+        if (dportInput) {
+            dportInput.classList.remove('is-valid');
+            dportInput.classList.add('is-invalid');
+        }
+        if (externalFeedback) {
+            externalFeedback.innerHTML = message;
+        }
+        if (statusEl) {
+            statusEl.style.display = 'block';
+            statusEl.className = 'mt-1 small text-danger';
+            statusEl.innerHTML = '<i class="fas fa-times-circle mr-1"></i>' + message;
+        }
+    }
+    
+    function showPortAvailable() {
+        const dportInput = document.getElementById('dportinput');
+        const externalFeedback = document.getElementById('externalPort-feedback');
+        const statusEl = document.getElementById('externalPort-status');
+        if (dportInput) {
+            dportInput.classList.remove('is-invalid');
+            dportInput.classList.add('is-valid');
+        }
+        if (externalFeedback) {
+            externalFeedback.innerHTML = '';
+        }
+        if (statusEl) {
+            statusEl.style.display = 'block';
+            statusEl.className = 'mt-1 small text-success';
+            statusEl.innerHTML = '<i class="fas fa-check-circle mr-1"></i>端口可用';
+        }
+    }
+    </script>

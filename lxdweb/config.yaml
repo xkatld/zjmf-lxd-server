@@ -1,0 +1,39 @@
+server:
+  # 服务器监听地址
+  address: "0.0.0.0:3001"
+  # 运行模式: debug | release
+  mode: "release"
+  # 会话密钥
+  session_secret: "GgUM6g7jJuAXaL3NzBNmB2z27EITb2#CfbHy$CA9JwQWL4%sPxJD%BfE2r3UC#zn"
+  # 启用 HTTPS
+  enable_https: true
+  # 证书文件路径
+  cert_file: "cert.pem"
+  # 密钥文件路径
+  key_file: "key.pem"
+
+# 默认管理员账号
+admin:
+  username: "admin"
+  password: "admin123"
+  email: ""
+
+database:
+  # 数据库文件路径
+  path: "lxdweb.db"
+
+logging:
+  # 日志级别: debug | info | warn | error
+  level: "info"
+  # 日志文件保存路径
+  file: "lxdweb.log"
+  # 单个日志文件最大大小（MB）
+  max_size: 10
+  # 保留的旧日志文件数量
+  max_backups: 2
+  # 保留的旧日志文件天数
+  max_age: 30
+  # 是否压缩旧日志文件
+  compress: true
+  # 开发模式
+  dev_mode: false

@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body class="bg-gray-50">
+    {{template "header.html" .}}
+    <div class="container mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800 flex items-center gap-3">
+                    <span class="iconify text-blue-600" data-icon="mdi:server-network" data-width="36"></span>
+                    节点管理
+                </h1>
+                <p class="text-gray-600 mt-1">管理和监控所有 LXD 节点</p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="showImportModal()" class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 text-sm font-medium rounded-lg shadow-md transition">
+                    <span class="iconify" data-icon="mdi:upload" data-width="18"></span>
+                    导入节点
+                </button>
+                <button onclick="exportNodes()" class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 text-sm font-medium rounded-lg shadow-md transition">
+                    <span class="iconify" data-icon="mdi:download" data-width="18"></span>
+                    导出节点
+                </button>
+                <button onclick="showAddModal()" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-sm font-medium rounded-lg shadow-md transition">
+                    <span class="iconify" data-icon="mdi:plus-circle" data-width="18"></span>
+                    添加节点
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg border border-gray-200 shadow-sm mb-4 p-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" id="selectAll" class="checkbox checkbox-sm checkbox-primary" onchange="toggleSelectAll()">
+                        <span class="text-sm text-gray-600">全选</span>
+                    </div>
+                    <div id="batchActions" style="display:none;" class="flex items-center gap-2">
+                        <span class="text-sm text-gray-700">已选择 <strong id="selectedCount">0</strong> 个</span>
+                        <button onclick="batchTest()" class="px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 rounded transition">
+                            批量测试
+                        </button>
+                        <button onclick="batchRefresh()" class="px-3 py-1.5 text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded transition">
+                            批量刷新
+                        </button>
+                        <button onclick="batchDelete()" class="px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded transition">
+                            批量删除
+                        </button>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                        <span>每页显示:</span>
+                        <select id="pageSize" onchange="changePageSize()" class="select select-bordered select-sm">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="15">15</option>
+                            <option value="999999">全部</option>
+                        </select>
+                    </div>
+                    <div class="flex bg-gray-100 rounded-lg p-1">
+                        <button id="viewCard" onclick="switchView('card')" class="px-3 py-1.5 text-sm rounded bg-white shadow-sm transition">
+                            <span class="iconify" data-icon="mdi:view-grid" data-width="16"></span>
+                        </button>
+                        <button id="viewList" onclick="switchView('list')" class="px-3 py-1.5 text-sm rounded transition">
+                            <span class="iconify" data-icon="mdi:view-list" data-width="16"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="nodesContent">
+            <div class="text-center py-12">
+                <span class="iconify animate-pulse-slow text-blue-500" data-icon="mdi:loading" data-width="48"></span>
+                <p class="text-gray-500 mt-4">加载节点数据...</p>
+            </div>
+        </div>
+
+        <div id="pagination" class="flex justify-center mt-6" style="display:none;">
+            <div class="join">
+                <button id="prevPage" onclick="prevPage()" class="join-item btn btn-sm">«</button>
+                <button class="join-item btn btn-sm">第 <span id="currentPage">1</span> 页</button>
+                <button id="nextPage" onclick="nextPage()" class="join-item btn btn-sm">»</button>
+            </div>
+        </div>
+    </div>
+
+    <dialog id="nodeModal" class="modal">
+        <div class="modal-box">
+            <h3 id="modalTitle" class="font-bold text-lg mb-4">添加节点</h3>
+            <form id="nodeForm" class="space-y-4">
+                <input type="hidden" id="nodeId">
+                <div class="form-control">
+                    <label class="label"><span class="label-text">节点名称 *</span></label>
+                    <input type="text" id="nodeName" required class="input input-bordered">
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">API地址 *</span></label>
+                    <input type="text" id="nodeAddress" required placeholder="https://IP:端口" class="input input-bordered">
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">API密钥</span></label>
+                    <input type="password" id="nodeApiKey" class="input input-bordered">
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">描述</span></label>
+                    <textarea id="nodeDescription" rows="3" class="textarea textarea-bordered"></textarea>
+                </div>
+                
+                <div class="modal-action">
+                    <button type="button" onclick="closeModal()" class="btn">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button onclick="closeModal()">close</button></form>
+    </dialog>
+
+    <!-- 同步配置模态框 -->
+    <dialog id="syncModal" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg mb-4" id="syncModalTitle">同步配置</h3>
+            <form id="syncForm" class="space-y-4">
+                <input type="hidden" id="syncNodeId">
+                
+                <div class="form-control">
+                    <label class="label cursor-pointer justify-start gap-2">
+                        <input type="checkbox" id="syncAutoSync" class="checkbox">
+                        <span class="label-text">启用自动同步</span>
+                    </label>
+                </div>
+                
+                <div class="form-control">
+                    <label class="label"><span class="label-text">同步间隔</span></label>
+                    <input type="number" id="syncSyncInterval" min="60" max="3600" value="300" class="input input-bordered">
+                    <label class="label"><span class="label-text-alt">单位：秒，建议300秒</span></label>
+                </div>
+                
+                <div class="form-control">
+                    <label class="label"><span class="label-text">批次大小</span></label>
+                    <input type="number" id="syncBatchSize" min="1" max="20" value="5" class="input input-bordered">
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">批次间隔</span></label>
+                    <input type="number" id="syncBatchInterval" min="1" max="30" value="5" class="input input-bordered">
+                    <label class="label"><span class="label-text-alt">单位：秒</span></label>
+                </div>
+                
+                <div class="modal-action">
+                    <button type="button" onclick="closeSyncModal()" class="btn">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button onclick="closeSyncModal()">close</button></form>
+    </dialog>
+
+    <dialog id="importModal" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg mb-4">导入节点</h3>
+            <div class="space-y-4">
+                <div class="alert alert-info">
+                    <span class="iconify" data-icon="mdi:information" data-width="20"></span>
+                    <span class="text-sm">请粘贴从"导出节点"功能获得的JSON数据</span>
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">JSON数据 *</span></label>
+                    <textarea id="importData" rows="10" class="textarea textarea-bordered font-mono text-xs" placeholder='[{"name":"节点1","address":"https://...","api_key":"..."}]'></textarea>
+                </div>
+                <div class="modal-action">
+                    <button type="button" onclick="closeImportModal()" class="btn">取消</button>
+                    <button type="button" onclick="submitImport()" class="btn btn-primary">导入</button>
+                </div>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button onclick="closeImportModal()">close</button></form>
+    </dialog>
+
+    <script>
+        let allNodes = [];
+        let filteredNodes = [];
+        let currentView = 'card';
+        let currentPage = 1;
+        let pageSize = 10;
+        let selectedNodes = new Set();
+
+        $(document).ready(function() {
+            loadNodes();
+        });
+
+        function loadNodes() {
+            $.get('/api/nodes', function(result) {
+                if (result.code === 200) {
+                    allNodes = result.data || [];
+                    filteredNodes = [...allNodes];
+                    currentPage = 1;
+                    selectedNodes.clear();
+                    updateSelectAll();
+                    renderNodes();
+                } else {
+                    $('#nodesContent').html('<div class="text-center py-12 text-red-600">加载失败: ' + result.msg + '</div>');
+                }
+            }).fail(function() {
+                $('#nodesContent').html('<div class="text-center py-12 text-red-600">加载失败，请检查网络连接</div>');
+            });
+        }
+
+        function renderNodes() {
+            if (!filteredNodes || filteredNodes.length === 0) {
+                $('#nodesContent').html(`
+                    <div class="text-center py-12">
+                        <span class="iconify text-gray-300 mb-4" data-icon="mdi:server-off" data-width="64"></span>
+                        <p class="text-gray-500 mt-4">暂无节点，点击"添加节点"开始</p>
+                    </div>
+                `);
+                $('#pagination').hide();
+                return;
+            }
+
+            const start = (currentPage - 1) * pageSize;
+            const end = pageSize === 999999 ? filteredNodes.length : start + pageSize;
+            const pageNodes = filteredNodes.slice(start, end);
+
+            if (currentView === 'card') {
+                renderCardView(pageNodes);
+            } else {
+                renderListView(pageNodes);
+            }
+
+            updatePagination();
+        }
+
+        function renderCardView(nodes) {
+            const cards = nodes.map(node => createNodeCard(node)).join('');
+            $('#nodesContent').html('<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">' + cards + '</div>');
+        }
+
+        function renderListView(nodes) {
+            let html = `
+                <div class="overflow-x-auto">
+                    <table class="table table-zebra">
+                        <thead>
+                            <tr>
+                                <th width="40"></th>
+                                <th>节点名称</th>
+                                <th>状态</th>
+                                <th>地址</th>
+                                <th>版本</th>
+                                <th>架构</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            nodes.forEach(node => {
+                const statusBadge = getStatusBadge(node.status);
+                const sysInfo = node.system_info || {};
+                const system = sysInfo.system || {};
+                const checked = selectedNodes.has(node.id) ? 'checked' : '';
+                
+                html += `
+                    <tr>
+                        <td><input type="checkbox" class="checkbox checkbox-sm checkbox-primary node-checkbox" data-id="${node.id}" ${checked} onchange="toggleNodeSelect(${node.id})"></td>
+                        <td>
+                            <div class="font-semibold text-gray-800">${node.name}</div>
+                            <div class="text-xs text-gray-500">${node.description || '暂无描述'}</div>
+                        </td>
+                        <td>${statusBadge}</td>
+                        <td><code class="text-xs">${node.address.replace(/^https?:\/\//, '')}</code></td>
+                        <td class="text-sm">${sysInfo.version || '-'}</td>
+                        <td class="text-sm">${system.arch || '-'}</td>
+                        <td>
+                            <div class="flex gap-1">
+                                <a href="/nodes/${node.id}" class="px-2 py-1 text-xs font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded transition">详情</a>
+                                <button onclick="testNode(${node.id})" class="px-2 py-1 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 rounded transition" title="测试连接">测试</button>
+                                <button onclick="editNode(${node.id})" class="px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded transition">编辑</button>
+                                <button onclick="editNodeSync(${node.id})" class="px-2 py-1 text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded transition">同步</button>
+                                <button onclick="deleteNode(${node.id})" class="px-2 py-1 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded transition">删除</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table></div>';
+            $('#nodesContent').html(html);
+        }
+
+        function createNodeCard(node) {
+            const statusBadge = getStatusBadge(node.status);
+            const sysInfo = node.system_info || {};
+            const system = sysInfo.system || {};
+            const checked = selectedNodes.has(node.id) ? 'checked' : '';
+            
+            return `
+                <div class="bg-white rounded-lg border border-gray-200 card-hover">
+                    <div class="p-4">
+                        <div class="flex items-start gap-2 mb-3">
+                            <input type="checkbox" class="checkbox checkbox-sm checkbox-primary node-checkbox mt-1" data-id="${node.id}" ${checked} onchange="toggleNodeSelect(${node.id})">
+                            <div class="flex-1 min-w-0">
+                                <h3 class="font-semibold text-gray-800 text-base truncate">${node.name}</h3>
+                                <p class="text-xs text-gray-500 mt-0.5 truncate">${node.description || '暂无描述'}</p>
+                            </div>
+                            ${statusBadge}
+                        </div>
+                        ${sysInfo.version ? `
+                            <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-md p-3 mb-3 space-y-1.5 text-xs">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600">版本</span>
+                                    <span class="font-medium text-gray-800">${sysInfo.version}</span>
+                                </div>
+                                ${system.arch ? `
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-gray-600">架构</span>
+                                        <span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded font-medium">${system.arch}</span>
+                                    </div>
+                                ` : ''}
+                                ${sysInfo.lxd_version ? `
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-gray-600">LXD</span>
+                                        <span class="font-medium text-gray-800">${sysInfo.lxd_version}</span>
+                                    </div>
+                                ` : ''}
+                                ${system.distribution ? `
+                                    <div class="pt-1 border-t border-gray-200">
+                                        <span class="text-gray-600">系统</span>
+                                        <div class="text-gray-700 font-medium mt-0.5 leading-tight">${system.distribution.split(' (')[0]}</div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        ` : `
+                            <div class="bg-amber-50 border border-amber-200 rounded-md p-2.5 mb-3 text-xs text-amber-700 flex items-center gap-1.5">
+                                <span class="iconify" data-icon="mdi:alert" data-width="14"></span>
+                                <span>无法获取系统信息</span>
+                            </div>
+                        `}
+                        <div class="flex items-center gap-1.5 text-xs text-gray-500 mb-3 bg-gray-50 rounded px-2 py-1.5">
+                            <span class="iconify" data-icon="mdi:link" data-width="14"></span>
+                            <span class="truncate font-mono">${node.address.replace(/^https?:\/\//, '')}</span>
+                        </div>
+                        <div class="flex gap-1.5 mb-2">
+                            <a href="/nodes/${node.id}" class="flex-1 px-2 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded transition text-center">详情</a>
+                            <button onclick="testNode(${node.id})" class="flex-1 px-2 py-1.5 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 rounded transition" title="测试连接">测试</button>
+                        </div>
+                        <div class="flex gap-1.5 mb-2">
+                            <button onclick="refreshNode(${node.id})" class="flex-1 px-2 py-1.5 text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded transition" title="刷新节点信息">刷新</button>
+                            <button onclick="editNodeSync(${node.id})" class="flex-1 px-2 py-1.5 text-xs font-medium text-orange-700 bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded transition">同步</button>
+                        </div>
+                        <div class="flex gap-1.5">
+                            <button onclick="editNode(${node.id})" class="flex-1 px-2 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded transition">编辑</button>
+                            <button onclick="deleteNode(${node.id})" class="flex-1 px-2 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded transition">删除</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getStatusBadge(status) {
+            const badges = {
+                'active': '<span class="px-2 py-0.5 text-xs font-medium text-green-700 bg-green-100 rounded-full flex items-center gap-1 w-fit"><span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>在线</span>',
+                'inactive': '<span class="px-2 py-0.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-full w-fit">离线</span>',
+                'error': '<span class="px-2 py-0.5 text-xs font-medium text-red-700 bg-red-100 rounded-full w-fit">错误</span>'
+            };
+            return badges[status] || badges.inactive;
+        }
+
+        function switchView(view) {
+            currentView = view;
+            if (view === 'card') {
+                $('#viewCard').addClass('bg-white shadow-sm');
+                $('#viewList').removeClass('bg-white shadow-sm');
+            } else {
+                $('#viewList').addClass('bg-white shadow-sm');
+                $('#viewCard').removeClass('bg-white shadow-sm');
+            }
+            renderNodes();
+        }
+
+        function changePageSize() {
+            pageSize = parseInt($('#pageSize').val());
+            currentPage = 1;
+            renderNodes();
+        }
+
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredNodes.length / pageSize);
+            if (pageSize === 999999 || totalPages <= 1) {
+                $('#pagination').hide();
+                return;
+            }
+            
+            $('#pagination').show();
+            $('#currentPage').text(currentPage);
+            $('#prevPage').prop('disabled', currentPage === 1);
+            $('#nextPage').prop('disabled', currentPage === totalPages);
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderNodes();
+            }
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(filteredNodes.length / pageSize);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderNodes();
+            }
+        }
+
+        function toggleSelectAll() {
+            const checked = $('#selectAll').is(':checked');
+            if (checked) {
+                filteredNodes.forEach(node => selectedNodes.add(node.id));
+            } else {
+                selectedNodes.clear();
+            }
+            renderNodes();
+            updateSelectedCount();
+        }
+
+        function toggleNodeSelect(nodeId) {
+            if (selectedNodes.has(nodeId)) {
+                selectedNodes.delete(nodeId);
+            } else {
+                selectedNodes.add(nodeId);
+            }
+            updateSelectAll();
+            updateSelectedCount();
+        }
+
+        function updateSelectAll() {
+            const allSelected = filteredNodes.length > 0 && filteredNodes.every(node => selectedNodes.has(node.id));
+            $('#selectAll').prop('checked', allSelected);
+        }
+
+        function updateSelectedCount() {
+            $('#selectedCount').text(selectedNodes.size);
+            if (selectedNodes.size > 0) {
+                $('#batchActions').show();
+            } else {
+                $('#batchActions').hide();
+            }
+        }
+
+        function batchTest() {
+            if (selectedNodes.size === 0) return;
+            if (!confirm(`确定要批量测试选中的 ${selectedNodes.size} 个节点吗？`)) return;
+            
+            let successCount = 0;
+            let failCount = 0;
+            const total = selectedNodes.size;
+            
+            const promises = Array.from(selectedNodes).map(nodeId => {
+                return $.post(`/api/nodes/${nodeId}/test`)
+                    .then(() => successCount++)
+                    .catch(() => failCount++);
+            });
+            
+            Promise.all(promises).then(() => {
+                alert(`批量测试完成\n成功: ${successCount}\n失败: ${failCount}`);
+                loadNodes();
+            });
+        }
+
+        function batchRefresh() {
+            if (selectedNodes.size === 0) return;
+            if (!confirm(`确定要批量刷新选中的 ${selectedNodes.size} 个节点吗？`)) return;
+            
+            let successCount = 0;
+            let failCount = 0;
+            
+            const promises = Array.from(selectedNodes).map(nodeId => {
+                return $.post(`/api/nodes/${nodeId}/refresh`)
+                    .then(() => successCount++)
+                    .catch(() => failCount++);
+            });
+            
+            Promise.all(promises).then(() => {
+                alert(`批量刷新完成\n成功: ${successCount}\n失败: ${failCount}`);
+                setTimeout(() => loadNodes(), 1000);
+            });
+        }
+
+        function batchDelete() {
+            if (selectedNodes.size === 0) return;
+            if (!confirm(`确定要批量删除选中的 ${selectedNodes.size} 个节点吗？\n\n删除后节点的所有数据将无法恢复！`)) return;
+            
+            $.ajax({
+                url: '/api/nodes/delete/batch',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ ids: Array.from(selectedNodes) }),
+                success: function(result) {
+                    if (result.errors && result.errors.length > 0) {
+                        alert(result.msg + '\n\n错误详情：\n' + result.errors.join('\n'));
+                    } else {
+                        alert(result.msg);
+                    }
+                    selectedNodes.clear();
+                    loadNodes();
+                },
+                error: function() {
+                    alert('批量删除失败');
+                }
+            });
+        }
+
+        function exportNodes() {
+            $.get('/api/nodes/export/all', function(result) {
+                if (result.code === 200) {
+                    const dataStr = JSON.stringify(result.data, null, 2);
+                    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                    const url = URL.createObjectURL(dataBlob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `lxd-nodes-export-${new Date().getTime()}.json`;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                } else {
+                    alert('导出失败: ' + result.msg);
+                }
+            }).fail(function() {
+                alert('导出失败');
+            });
+        }
+
+        function showImportModal() {
+            document.getElementById('importModal').showModal();
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModal').close();
+            $('#importData').val('');
+        }
+
+        function submitImport() {
+            const data = $('#importData').val().trim();
+            if (!data) {
+                alert('请输入JSON数据');
+                return;
+            }
+            
+            try {
+                const jsonData = JSON.parse(data);
+                $.ajax({
+                    url: '/api/nodes/import/batch',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(jsonData),
+                    success: function(result) {
+                        if (result.errors && result.errors.length > 0) {
+                            alert(result.msg + '\n\n错误详情：\n' + result.errors.join('\n'));
+                        } else {
+                            alert(result.msg);
+                        }
+                        closeImportModal();
+                        loadNodes();
+                    },
+                    error: function() {
+                        alert('导入失败');
+                    }
+                });
+            } catch (e) {
+                alert('JSON格式错误: ' + e.message);
+            }
+        }
+        
+        function showAddModal() {
+            $('#modalTitle').text('添加节点');
+            $('#nodeForm')[0].reset();
+            $('#nodeId').val('');
+            document.getElementById('nodeModal').showModal();
+        }
+
+        function editNode(id) {
+            $.get(`/api/nodes/${id}`, function(result) {
+                if (result.code === 200) {
+                    const node = result.data;
+                    $('#modalTitle').text('编辑节点');
+                    $('#nodeId').val(node.id);
+                    $('#nodeName').val(node.name);
+                    $('#nodeAddress').val(node.address);
+                    $('#nodeApiKey').val(node.api_key);
+                    $('#nodeDescription').val(node.description);
+                    document.getElementById('nodeModal').showModal();
+                } else {
+                    alert('获取节点信息失败');
+                }
+            });
+        }
+
+        function editNodeSync(id) {
+            $.get(`/api/nodes/${id}`, function(result) {
+                if (result.code === 200) {
+                    const node = result.data;
+                    $('#syncModalTitle').text(`同步配置 - ${node.name}`);
+                    $('#syncNodeId').val(node.id);
+                    $('#syncAutoSync').prop('checked', node.auto_sync || false);
+                    $('#syncSyncInterval').val(node.sync_interval || 300);
+                    $('#syncBatchSize').val(node.batch_size || 5);
+                    $('#syncBatchInterval').val(node.batch_interval || 5);
+                    document.getElementById('syncModal').showModal();
+                } else {
+                    alert('获取节点信息失败');
+                }
+            });
+        }
+
+        function closeModal() {
+            document.getElementById('nodeModal').close();
+        }
+
+        function closeSyncModal() {
+            document.getElementById('syncModal').close();
+        }
+
+        $('#nodeForm').on('submit', function(e) {
+            e.preventDefault();
+            const id = $('#nodeId').val();
+            const data = {
+                name: $('#nodeName').val(),
+                address: $('#nodeAddress').val(),
+                api_key: $('#nodeApiKey').val(),
+                description: $('#nodeDescription').val()
+            };
+            const url = id ? `/api/nodes/${id}` : '/api/nodes';
+            const method = id ? 'PUT' : 'POST';
+            $.ajax({
+                url: url,
+                method: method,
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function(result) {
+                    if (result.code === 200) {
+                        closeModal();
+                        loadNodes();
+                        alert(id ? '节点更新成功' : '节点创建成功');
+                    } else {
+                        alert(result.msg);
+                    }
+                },
+                error: function() {
+                    alert('操作失败');
+                }
+            });
+        });
+
+        function testNode(id) {
+            const $btn = $(`button[onclick="testNode(${id})"]`);
+            const originalHtml = $btn.html();
+            $btn.html('<span class="loading loading-spinner loading-xs"></span>').prop('disabled', true);
+            $.post(`/api/nodes/${id}/test`, function(result) {
+                $btn.html(originalHtml).prop('disabled', false);
+                alert(result.msg);
+                loadNodes();
+            }).fail(function() {
+                $btn.html(originalHtml).prop('disabled', false);
+                alert('测试失败');
+            });
+        }
+
+        function refreshNode(id) {
+            const $btn = $(`button[onclick="refreshNode(${id})"]`);
+            const originalHtml = $btn.html();
+            $btn.html('<span class="loading loading-spinner loading-xs"></span>').prop('disabled', true);
+            $.post(`/api/nodes/${id}/refresh`, function(result) {
+                $btn.html(originalHtml).prop('disabled', false);
+                if (result.code === 200) {
+                    setTimeout(() => loadNodes(), 500);
+                } else {
+                    alert(result.msg);
+                }
+            }).fail(function() {
+                $btn.html(originalHtml).prop('disabled', false);
+                alert('刷新失败');
+            });
+        }
+
+        $('#syncForm').on('submit', function(e) {
+            e.preventDefault();
+            const id = $('#syncNodeId').val();
+            const data = {
+                auto_sync: $('#syncAutoSync').is(':checked'),
+                sync_interval: parseInt($('#syncSyncInterval').val()) || 300,
+                batch_size: parseInt($('#syncBatchSize').val()) || 5,
+                batch_interval: parseInt($('#syncBatchInterval').val()) || 5
+            };
+            $.ajax({
+                url: `/api/nodes/${id}`,
+                method: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function(result) {
+                    if (result.code === 200) {
+                        closeSyncModal();
+                        loadNodes();
+                        alert('同步配置更新成功');
+                    } else {
+                        alert(result.msg);
+                    }
+                },
+                error: function() {
+                    alert('更新失败');
+                }
+            });
+        });
+
+        function deleteNode(id) {
+            if (!confirm('⚠️ 警告：确定要删除此节点吗？\n\n删除后该节点的所有容器、NAT规则等配置信息都将丢失，且无法恢复！')) return;
+            $.ajax({
+                url: `/api/nodes/${id}`,
+                method: 'DELETE',
+                success: function(result) {
+                    if (result.code === 200) {
+                        selectedNodes.delete(id);
+                        loadNodes();
+                        alert('节点删除成功');
+                    } else {
+                        alert(result.msg);
+                    }
+                },
+                error: function() {
+                    alert('删除失败');
+                }
+            });
+        }
+    </script>
+
+    {{template "footer.html" .}}
+</body>
+</html>

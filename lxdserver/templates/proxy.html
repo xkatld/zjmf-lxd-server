@@ -1,0 +1,822 @@
+<style>
+/* 简洁专业设计风格 */
+.proxy-card {
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.proxy-card-header {
+    background: #4a5568;
+    border-radius: 8px 8px 0 0;
+    color: white;
+    border: none;
+}
+
+.modern-table {
+    border: 1px solid #e1e5e9;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.modern-table thead {
+    background: #f8f9fa;
+    color: #495057;
+}
+
+.modern-table thead th {
+    border: none;
+    padding: 10px 12px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.modern-table thead th i {
+    margin-right: 6px;
+    color: #6c757d;
+}
+
+.modern-table tbody tr {
+    border: none;
+    transition: background-color 0.2s ease;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.modern-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.modern-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.modern-table tbody td {
+    border: none;
+    padding: 10px 12px;
+    vertical-align: middle;
+    font-size: 0.85rem;
+}
+
+.domain-text {
+    background: #e3f2fd;
+    color: #1976d2;
+    border: 1px solid #bbdefb;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+    display: inline-block;
+    text-align: center;
+}
+
+.domain-text:hover {
+    background: #bbdefb;
+    color: #0d47a1;
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 0.8rem;
+    display: inline-block;
+    min-width: 60px;
+    text-align: center;
+}
+
+.status-active {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.action-btn {
+    background: #ffffff;
+    color: #dc3545;
+    border: 1px solid #dc3545;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    background: #dc3545;
+    color: #ffffff;
+}
+
+.btn-create {
+    background: #007bff;
+    border: 1px solid #007bff;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.btn-create:hover {
+    background: #0056b3;
+    border-color: #0056b3;
+    color: white;
+}
+
+.description-text {
+    background: #f8f9fa;
+    color: #6c757d;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-style: italic;
+    font-size: 0.85rem;
+    border-left: 3px solid #007bff;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.badge-modern {
+    background: #6c757d;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 0.8rem;
+}
+
+.badge-success-modern {
+    background: #28a745;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 0.8rem;
+}
+
+@media (max-width: 768px) {
+    .modern-table thead th,
+    .modern-table tbody td {
+        padding: 8px 6px;
+        font-size: 0.75rem;
+    }
+    
+    .domain-text {
+        font-size: 0.7rem;
+        padding: 4px 8px;
+    }
+    
+    .action-btn {
+        font-size: 0.7rem;
+        padding: 4px 6px;
+    }
+    
+    .status-badge {
+        font-size: 0.65rem;
+        padding: 2px 6px;
+    }
+    
+    .description-text {
+        max-width: 100px;
+        font-size: 0.75rem;
+    }
+}
+</style>
+
+<div class="container-fluid" id="proxyManager">
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-globe mr-2"></i>Nginx反向代理管理
+                    </h6>
+                    <small class="text-muted">通过域名访问容器内的Web服务</small>
+                    <div class="mt-2">
+                        <span class="badge badge-secondary ml-2">
+                            已绑定: <span id="current-proxy-count">0</span>/{$proxy_limit} 个
+                        </span>
+                        <span class="badge badge-success ml-1">
+                            剩余: <span id="remaining-proxy-count">0</span> 个
+                        </span>
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <button class="btn btn-create btn-sm mr-2" data-toggle="modal" data-target="#addProxyModal" id="add-proxy-btn">
+                        <i class="fas fa-plus mr-1"></i>添加域名
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="refreshProxyList()">
+                        <i class="fas fa-sync-alt mr-1"></i>刷新
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div id="proxy-empty-state" class="text-center py-5" style="display:none">
+                <div class="empty-state-content">
+                    <i class="fas fa-globe fa-4x text-muted mb-4" style="opacity:0.3"></i>
+                    <h4 class="text-muted mb-3">暂无反向代理</h4>
+                    <p class="text-muted mb-4">您还没有创建任何域名反向代理</p>
+                    <button class="btn btn-create btn-lg" data-toggle="modal" data-target="#addProxyModal" style="border-radius: 17px; padding: 6px 20px;">
+                        <i class="fas fa-plus mr-2"></i>创建第一个反向代理
+                    </button>
+                </div>
+            </div>
+
+            <div id="proxy-list-container" style="display:block">
+                <div class="table-responsive">
+                    <table class="table modern-table mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width:25%">
+                                    <i class="fas fa-globe"></i>域名
+                                </th>
+                                <th style="width:12%">
+                                    <i class="fas fa-exchange-alt"></i>协议
+                                </th>
+                                <th style="width:12%">
+                                    <i class="fas fa-network-wired"></i>容器端口
+                                </th>
+                                <th style="width:25%">
+                                    <i class="fas fa-comment-alt"></i>描述信息
+                                </th>
+                                <th style="width:13%">
+                                    <i class="fas fa-chart-line"></i>状态
+                                </th>
+                                <th style="width:13%">
+                                    <i class="fas fa-cogs"></i>操作
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="proxy-tbody">
+                            <tr class="loading-row">
+                                <td colspan="6" class="text-center py-4">
+                                    <i class="fas fa-spinner fa-spin mr-2"></i>加载中...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addProxyModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus-circle text-primary mr-2"></i>添加反向代理
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" onclick="closeAddModal()">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-success mb-3">
+                        <i class="fas fa-info-circle mr-1"></i><strong>功能说明:</strong> 通过域名访问容器内的Web服务，请先将域名DNS解析到服务器IP
+                    </div>
+                    <form id="addProxyForm">
+                        <div class="form-group">
+                            <label>
+                                <i class="fas fa-server mr-1"></i>容器名称
+                            </label>
+                            <input type="text" class="form-control" value="{$container_name}" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="proxyDomain">
+                                <i class="fas fa-globe mr-1"></i>域名 <span class="text-danger">*</span>
+                            </label>
+                            <input name="domain" type="text" class="form-control" id="proxyDomain" 
+                                   placeholder="例如: example.com" required>
+                            <small class="form-text text-muted">请输入已解析到服务器IP的域名</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="containerPort">
+                                <i class="fas fa-network-wired mr-1"></i>容器端口
+                            </label>
+                            <input name="container_port" type="number" class="form-control" id="containerPort" 
+                                   value="80" min="1" max="65535">
+                            <small class="form-text text-muted">容器内Web服务监听的端口，默认80</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="proxyDescription">
+                                <i class="fas fa-comment mr-1"></i>描述信息 (可选)
+                            </label>
+                            <input name="description" type="text" class="form-control" id="proxyDescription" 
+                                   placeholder="请输入描述">
+                            <small class="form-text text-muted">为该反向代理添加描述信息，方便管理</small>
+                        </div>
+                        <hr>
+                        <div class="form-group">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="sslEnabled" name="ssl_enabled">
+                                <label class="custom-control-label" for="sslEnabled">
+                                    <i class="fas fa-lock text-success mr-1"></i><strong>启用 HTTPS (SSL/TLS)</strong>
+                                </label>
+                            </div>
+                            <small class="form-text text-muted">启用后HTTP请求将自动重定向到HTTPS</small>
+                        </div>
+                        <div id="sslOptions" style="display:none;">
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-certificate mr-1"></i>SSL 证书类型
+                                </label>
+                                <select name="ssl_type" class="form-control" id="sslType">
+                                    <option value="self-signed">自动生成自签名证书（10年有效期）</option>
+                                    <option value="custom">手动填写证书内容</option>
+                                </select>
+                                <small class="form-text text-muted">自签名证书：浏览器会提示不安全，但仍可加密传输</small>
+                            </div>
+                            <div id="customCertFields" style="display:none;">
+                                <div class="form-group">
+                                    <label for="sslCert">
+                                        <i class="fas fa-file-alt mr-1"></i>SSL 证书内容 <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea name="ssl_cert" class="form-control" id="sslCert" rows="6" 
+                                              placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----"></textarea>
+                                    <small class="form-text text-muted">粘贴完整的证书内容（PEM格式）</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="sslKey">
+                                        <i class="fas fa-key mr-1"></i>SSL 私钥内容 <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea name="ssl_key" class="form-control" id="sslKey" rows="6" 
+                                              placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"></textarea>
+                                    <small class="form-text text-muted">粘贴完整的私钥内容（PEM格式）</small>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm mr-2" data-dismiss="modal" onclick="closeAddModal()">
+                        <i class="fas fa-times mr-1"></i>取消
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm confirm-btn-proxy">
+                        <i class="fas fa-check mr-1"></i>确认添加
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow mt-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-question-circle mr-2"></i>使用说明
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-globe text-primary mr-2"></i><strong>域名解析:</strong> 先将域名A记录指向服务器IP</li>
+                        <li class="mb-2"><i class="fas fa-server text-success mr-2"></i><strong>容器端口:</strong> 容器内Web服务监听的端口</li>
+                        <li class="mb-2"><i class="fas fa-link text-info mr-2"></i><strong>自动配置:</strong> 系统自动生成Nginx配置</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-copy text-warning mr-2"></i>点击域名可复制到剪贴板</li>
+                        <li class="mb-2"><i class="fas fa-trash text-danger mr-2"></i>删除后域名将无法访问</li>
+                        <li class="mb-2"><i class="fas fa-shield-alt text-secondary mr-2"></i>容器域名绑定有数量限制</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+var currentContainerId = '';
+var MODULE_API_URL = "{$MODULE_CUSTOM_API}";
+var currentContainerName = '{$container_name}';
+var proxyLimit = {$proxy_limit};
+var currentProxyCount = 0;
+
+$(document).ready(function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const containerId = urlParams.get('id');
+    if (containerId) {
+        currentContainerId = containerId;
+        fetchProxyList();
+        setInterval(fetchProxyList, 30000);
+    }
+});
+
+function fetchProxyList() {
+    if (!currentContainerId) return;
+    
+    const timestamp = new Date().getTime();
+    const proxyListUrl = `/provision/custom/content?id=${currentContainerId}&key=proxy_acl&action=proxylist&_t=${timestamp}`;
+
+    $.ajax({
+        url: proxyListUrl,
+        method: 'GET',
+        dataType: 'json',
+        timeout: 10000,
+        cache: false,
+        success: function(resp) {
+            if (resp && resp.data && resp.data.list && Array.isArray(resp.data.list)) {
+                const list = resp.data.list;
+                const $empty = $('#proxy-empty-state');
+                const $listContainer = $('#proxy-list-container');
+                const $tbody = $('#proxy-tbody');
+                
+                if (list.length === 0) {
+                    $empty.show();
+                    $listContainer.hide();
+                    updateProxyCounters(0);
+                } else {
+                    $empty.hide();
+                    $listContainer.show();
+                    
+                    let html = '';
+                    list.forEach(function(item) {
+                        const domain = item.domain || '';
+                        const containerPort = item.container_port || 80;
+                        const status = item.status || 'active';
+                        const description = item.description || '';
+                        
+                        let statusBadge = '<span class="status-badge status-active"><i class="fas fa-check-circle mr-1"></i>正常</span>';
+                        
+                        let descriptionDisplay = '';
+                        if (description && description.trim() !== '') {
+                            descriptionDisplay = '<div class="description-text" title="' + description + '">' + description + '</div>';
+                        } else {
+                            const autoDescription = `反向代理 (${domain}:${containerPort})`;
+                            descriptionDisplay = '<div class="description-text text-muted" title="' + autoDescription + '" style="font-style: italic;">' + autoDescription + '</div>';
+                        }
+                        
+                        const sslEnabled = item.ssl_enabled || false;
+                        const sslType = item.ssl_type || 'none';
+                        let protocolDisplay = '';
+                        if (sslEnabled) {
+                            const sslBadge = sslType === 'self-signed' ? 
+                                '<span class="badge badge-warning" style="font-size: 0.7rem; margin-left: 2px;" title="自签名证书">自签</span>' : 
+                                '<span class="badge badge-info" style="font-size: 0.7rem; margin-left: 2px;" title="自定义证书">自定义</span>';
+                            protocolDisplay = '<span class="badge badge-success" style="font-size: 0.85rem; padding: 5px 10px;"><i class="fas fa-lock mr-1"></i>HTTPS</span>' + sslBadge;
+                        } else {
+                            protocolDisplay = '<span class="badge badge-secondary" style="font-size: 0.85rem; padding: 5px 10px;">HTTP</span>';
+                        }
+                        const portDisplay = '<span class="badge badge-success" style="font-size: 0.85rem; padding: 5px 10px;">' + containerPort + '</span>';
+                        
+                        html += '<tr>' +
+                                '<td><div class="domain-text" onclick="copyToClipboard(\'' + domain + '\')" title="点击复制域名">' + domain + '</div></td>' +
+                                '<td>' + protocolDisplay + '</td>' +
+                                '<td>' + portDisplay + '</td>' +
+                                '<td>' + descriptionDisplay + '</td>' +
+                                '<td>' + statusBadge + '</td>' +
+                                '<td><button class="btn action-btn delete-proxy-btn" data-domain="' + domain + '" title="删除此反向代理"><i class="fas fa-trash-alt"></i></button></td>' +
+                                '</tr>';
+                    });
+                    $tbody.html(html);
+                    updateProxyCounters(list.length);
+                }
+            } else {
+                const $empty = $('#proxy-empty-state');
+                const $listContainer = $('#proxy-list-container');
+                $listContainer.hide();
+                $empty.show();
+                updateProxyCounters(0);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('反向代理列表获取失败:', error);
+            const $empty = $('#proxy-empty-state');
+            const $listContainer = $('#proxy-list-container');
+            $listContainer.hide();
+            $empty.show();
+            updateProxyCounters(0);
+        }
+    });
+}
+
+function updateProxyCounters(count) {
+    currentProxyCount = count;
+    const remainingCount = Math.max(0, proxyLimit - count);
+    
+    $('#current-proxy-count').text(count);
+    $('#remaining-proxy-count').text(remainingCount);
+    
+    const $addBtn = $('#add-proxy-btn');
+    if (count >= proxyLimit) {
+        $addBtn.prop('disabled', true);
+        $addBtn.html('<i class="fas fa-ban mr-1"></i>已达限制');
+        $addBtn.removeClass('btn-create').addClass('btn-secondary btn-sm');
+        $addBtn.attr('title', `反向代理数量已达到限制（${proxyLimit}个）`);
+    } else {
+        $addBtn.prop('disabled', false);
+        $addBtn.html('<i class="fas fa-plus mr-1"></i>添加域名');
+        $addBtn.removeClass('btn-secondary').addClass('btn-create btn-sm');
+        $addBtn.attr('title', '');
+    }
+}
+
+function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+            Swal.fire({
+                type: 'success',
+                title: '复制成功',
+                text: '域名已复制到剪贴板: ' + text,
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }).catch(function() {
+            fallbackCopyTextToClipboard(text);
+        });
+    } else {
+        fallbackCopyTextToClipboard(text);
+    }
+}
+
+function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+        document.execCommand('copy');
+        Swal.fire({
+            type: 'success',
+            title: '复制成功',
+            text: '域名已复制到剪贴板: ' + text,
+            timer: 2000,
+            showConfirmButton: false
+        });
+    } catch (err) {
+        Swal.fire({
+            type: 'error',
+            title: '复制失败',
+            text: '请手动复制: ' + text
+        });
+    }
+    document.body.removeChild(textArea);
+}
+
+function refreshProxyList() {
+    fetchProxyList();
+}
+
+function closeAddModal() {
+    setTimeout(function() {
+        const formEl = document.getElementById('addProxyForm');
+        if (formEl) formEl.reset();
+        $('#sslOptions').hide();
+        $('#customCertFields').hide();
+    }, 150);
+}
+
+// SSL选项控制
+$('#sslEnabled').on('change', function() {
+    if ($(this).is(':checked')) {
+        $('#sslOptions').slideDown(200);
+    } else {
+        $('#sslOptions').slideUp(200);
+        $('#customCertFields').slideUp(200);
+    }
+});
+
+// SSL类型选择控制
+$('#sslType').on('change', function() {
+    if ($(this).val() === 'custom') {
+        $('#customCertFields').slideDown(200);
+    } else {
+        $('#customCertFields').slideUp(200);
+        $('#sslCert').val('');
+        $('#sslKey').val('');
+    }
+});
+
+// 删除反向代理
+$(document).on('click', '.delete-proxy-btn', function (e) {
+    e.preventDefault();
+    if ($(this).data('disabled') == 'true') return;
+
+    const delete_proxy_btn = $(this);
+    const domain = delete_proxy_btn.data('domain');
+
+    Swal.fire({
+        type: 'warning',
+        title: '删除反向代理',
+        html: `<div class="text-muted">域名: <span class="badge badge-primary">${domain}</span></div>`,
+        showCancelButton: true,
+        reverseButtons: true,
+        buttonsStyling: false,
+        customClass: {
+            popup: 'swal2-bootstrap-card',
+            confirmButton: 'btn btn-danger',
+            cancelButton: 'btn btn-secondary mr-3'
+        },
+        confirmButtonText: '确认删除',
+        cancelButtonText: '取消'
+    }).then((result) => {
+        if (result.value) {
+            delete_proxy_btn.data('orig-html', delete_proxy_btn.html());
+            delete_proxy_btn.html('<i class="fas fa-circle-notch fa-spin"></i>');
+            delete_proxy_btn.data('disabled', 'true');
+
+            ajax({
+                type: 'post',
+                url: MODULE_API_URL,
+                data: { func: 'proxydel', domain: domain },
+                success: function (data) {
+                    delete_proxy_btn.html(delete_proxy_btn.data('orig-html') || '删除');
+                    delete_proxy_btn.data('disabled', 'false');
+                    
+                    const isSuccess = data.status === 200 || data.status === '200' ||
+                                    data.code === 200 || data.code === '200' ||
+                                    data.status === 'success';
+
+                    if (isSuccess) {
+                        Swal.fire({
+                            type: 'success',
+                            title: '删除成功',
+                            text: data.msg || data.message || '反向代理删除成功',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        fetchProxyList();
+                    } else {
+                        Swal.fire({
+                            type: 'error',
+                            title: '删除失败',
+                            text: data.msg || data.message || '操作失败'
+                        });
+                    }
+                },
+                error: function (xhrStatus, errorData) {
+                    delete_proxy_btn.html(delete_proxy_btn.data('orig-html') || '删除');
+                    delete_proxy_btn.data('disabled', 'false');
+                    
+                    Swal.fire({
+                        type: 'error',
+                        title: '删除失败',
+                        text: '网络或服务器错误'
+                    });
+                }
+            });
+        }
+    });
+});
+
+// 添加反向代理
+$('.confirm-btn-proxy').on('click', function () {
+    if (!currentContainerName) {
+        Swal.fire({
+            type: 'error',
+            title: '容器信息未加载',
+            text: '请稍后再试'
+        });
+        return;
+    }
+
+    const domain = $('#proxyDomain').val().trim();
+    if (!domain) {
+        Swal.fire({
+            type: 'warning',
+            title: '请输入域名',
+            text: '域名不能为空'
+        });
+        return;
+    }
+
+    if (currentProxyCount >= proxyLimit) {
+        Swal.fire({
+            type: 'warning',
+            title: '反向代理数量已达限制',
+            text: `您的容器最多只能创建 ${proxyLimit} 个反向代理`,
+            confirmButtonText: '我知道了'
+        });
+        return;
+    }
+
+    if (!$(this).data('submit')) {
+        var current_button = $(this);
+        current_button.data('orig-html', current_button.html());
+        current_button.html('<i class="fas fa-circle-notch fa-spin"></i>');
+        current_button.data('submit', 'submit');
+
+        // 构建提交数据
+        var formData = $('#addProxyForm').serialize() + '&func=proxyadd';
+        
+        // 处理SSL复选框
+        if ($('#sslEnabled').is(':checked')) {
+            formData += '&ssl_enabled=true';
+        } else {
+            formData += '&ssl_enabled=false';
+        }
+
+        ajax({
+            type: 'post',
+            url: MODULE_API_URL,
+            data: formData,
+            success: function (data) {
+                current_button.html(current_button.data('orig-html') || '确认添加');
+                current_button.data('submit', '');
+
+                if (!data || typeof data !== 'object') {
+                    Swal.fire({
+                        type: 'error',
+                        title: '添加失败',
+                        text: '服务器响应格式异常'
+                    });
+                    return;
+                }
+
+                const isSuccess = data.status === 200 || data.status === '200' ||
+                                data.code === 200 || data.code === '200' ||
+                                data.status === 'success';
+
+                if (isSuccess) {
+                    Swal.fire({
+                        type: 'success',
+                        title: '添加成功',
+                        text: data.msg || data.message || '反向代理添加成功',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    $('#addProxyModal').modal('hide');
+                    closeAddModal();
+                    setTimeout(function() {
+                        fetchProxyList();
+                    }, 100);
+                } else {
+                    Swal.fire({
+                        type: 'error',
+                        title: '添加失败',
+                        text: data.msg || data.message || '操作失败'
+                    });
+                }
+            },
+            error: function (xhrStatus, errorData) {
+                current_button.html(current_button.data('orig-html') || '确认添加');
+                current_button.data('submit', '');
+
+                Swal.fire({
+                    type: 'error',
+                    title: '添加失败',
+                    text: '网络或服务器错误'
+                });
+            }
+        });
+    }
+});
+
+function ajax(options) {
+    var xhr = new XMLHttpRequest() || new ActiveXObject("Microsoft,XMLHTTP");
+    var str = "";
+
+    if (typeof options.data != 'string') {
+        for (var key in options.data) {
+            str += "&" + key + "=" + options.data[key];
+        }
+        str = str.slice(1);
+    } else {
+        str = options.data;
+    }
+
+    if (options.type == "get") {
+        xhr.open("get", options.url + "?" + str);
+        xhr.setRequestHeader("Authorization", "JWT {$Think.get.jwt}");
+        xhr.send();
+    } else if (options.type == "post") {
+        xhr.open("post", options.url);
+        xhr.setRequestHeader("content-type", "application/x-www-form-urlencoded");
+        xhr.setRequestHeader("Authorization", "JWT {$Think.get.jwt}");
+        xhr.send(str);
+    }
+
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            try {
+                var d = JSON.parse(xhr.responseText);
+                options.success && options.success(d, xhr.responseXML);
+            } catch (e) {
+                options.error && options.error(xhr.status, 'JSON解析错误');
+            }
+        } else if (xhr.readyState == 4 && xhr.status != 200) {
+            try {
+                var parsedErrorData = JSON.parse(xhr.responseText);
+                options.error && options.error(xhr.status, parsedErrorData);
+            } catch (e) {
+                options.error && options.error(xhr.status, xhr.responseText);
+            }
+        }
+    };
+}
+</script>
+
