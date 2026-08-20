@@ -1,5 +1,7 @@
 # 魔方财务 LXD 对接插件 zjmf-lxd-server
 
+INUCS闭源 LXC/KVM 项目 https://vpsm91.com 有社区支持版本
+
 ## 联系方式
 
 需要加群讨论或共同交流可以先添加微信 `fsynetcom` 加好友申请入群，添加时请记得备注。
